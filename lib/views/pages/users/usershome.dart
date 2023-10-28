@@ -23,7 +23,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bounce/flutter_bounce.dart';
-import 'package:flutter_quill/flutter_quill.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
@@ -49,7 +48,7 @@ class _UserHomeState extends State<UserHome>  {
 
 
   ScrollController scrollController = ScrollController();
-  final QuillController _controller = QuillController.basic();
+  //final QuillController _controller = QuillController.basic();
 
   //Global Variables
   Global g = Global();
@@ -3861,8 +3860,8 @@ class _UserHomeState extends State<UserHome>  {
       return;
     }
 
-    var json = jsonEncode(_controller.document.toDelta().toJson());
-    var txt = _controller.document.toPlainText();
+    // var json = jsonEncode(_controller.document.toDelta().toJson());
+    // var txt = _controller.document.toPlainText();
 
 
     var TASK = [
@@ -4185,6 +4184,7 @@ class _UserHomeState extends State<UserHome>  {
       fnShowNotification(pt);
     });
   }
+
   fnShowNotification(data) async{
     var notiData =  jsonDecode(data.toString());
     var createDate = "";

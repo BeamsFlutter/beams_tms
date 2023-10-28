@@ -4,7 +4,6 @@
 
 list(APPEND FLUTTER_PLUGIN_LIST
   local_notifier
-  pasteboard
   record_windows
   url_launcher_windows
 )

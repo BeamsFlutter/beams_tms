@@ -17,7 +17,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bounce/flutter_bounce.dart';
 import 'package:flutter_dropzone/flutter_dropzone.dart';
 import 'package:flutter_mentions/flutter_mentions.dart';
-import 'package:flutter_quill/flutter_quill.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
@@ -44,7 +43,7 @@ class _NewTaskState extends State<NewTask> {
   var apiCall  = ApiCall();
   late Future<dynamic> futureForm ;
   var wstrPageForm  = [];
-  QuillController _controller = QuillController.basic();
+  //QuillController _controller = QuillController.basic();
 
   //TaskData
   var lstrCompanyList = [];
@@ -2548,8 +2547,8 @@ class _NewTaskState extends State<NewTask> {
 
 
 
-    var json = jsonEncode(_controller.document.toDelta().toJson());
-    var txt = _controller.document.toPlainText();
+    // var json = jsonEncode(_controller.document.toDelta().toJson());
+    // var txt = _controller.document.toPlainText();
 
 
     var TASK = [
