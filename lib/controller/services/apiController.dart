@@ -681,4 +681,29 @@ class ApiCall  with BaseController{
 
   }
 
+
+//============================================TASK REPORT
+
+  Future<dynamic> apiTaskReport(mode,startDate,endDate,keyVal) async{
+
+    var request = jsonEncode(<dynamic, dynamic>{
+      "TYPE_LIST": keyVal, //[{'COL_VAL':'', 'KEY_VAL':''// }]
+      "MODE": mode,
+      "STARTDATE":startDate,
+      "ENDDATE": endDate
+    });
+    dprint('api/taskreport');
+    dprint(request);
+    var response = await ApiManager().post('api/taskreport',request).catchError((error){
+      if (error is BadRequestException) {
+      } else {
+        handleError(error);
+      }
+    });
+    dprint(response);
+    if (response == null) return;
+
+    return response;
+
+  }
 }
