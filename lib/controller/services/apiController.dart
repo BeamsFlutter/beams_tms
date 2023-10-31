@@ -684,11 +684,11 @@ class ApiCall  with BaseController{
 
 //============================================TASK REPORT
 
-  Future<dynamic> apiTaskReport(mode,startDate,endDate,keyVal) async{
+  Future<dynamic> apiTaskReport(column,startDate,endDate,keyVal) async{
 
     var request = jsonEncode(<dynamic, dynamic>{
       "TYPE_LIST": keyVal, //[{'COL_VAL':'', 'KEY_VAL':''// }]
-      "MODE": mode,
+      "COLUMN": column,//[{'COL_VAL':'', 'KEY_VAL':''// }]
       "STARTDATE":startDate,
       "ENDDATE": endDate
     });
