@@ -433,46 +433,583 @@ class _UserHomeState extends State<UserHome> {
                   ),
                 ),
                 Flexible(
-                    flex: 8,
-                    child: Container(
-                      padding: const EdgeInsets.all(10),
-                      child: Column(
-                        children: [
-                          Row(),
-                          Container(
-                            decoration: boxDecoration(
-                                g.wstrDarkMode ? Colors.black : Colors.white,
-                                10),
-                            padding: const EdgeInsets.all(10),
-                            child: Column(
-                              children: [
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Bounce(
-                                      duration:
-                                          const Duration(milliseconds: 110),
-                                      onPressed: () {
-                                        if (mounted) {
-                                          setState(() {
-                                            lstrTaskListPageNo = 0;
-                                          });
-                                        }
-                                        apiGetTask("");
-                                      },
-                                      child: Image.asset(
-                                        g.wstrDarkMode
-                                            ? "assets/images/namewhite.png"
-                                            : "assets/images/nameblack.png",
-                                        width: 150,
-                                      ),
+                  flex: 8,
+                  child: Container(
+                    padding: const EdgeInsets.all(10),
+                    child: Column(
+                      children: [
+                        Row(),
+                        Container(
+                          decoration: boxDecoration(
+                              g.wstrDarkMode ? Colors.black : Colors.white, 10),
+                          padding: const EdgeInsets.all(10),
+                          child: Column(
+                            children: [
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Bounce(
+                                    duration: const Duration(milliseconds: 110),
+                                    onPressed: () {
+                                      if (mounted) {
+                                        setState(() {
+                                          lstrTaskListPageNo = 0;
+                                        });
+                                      }
+                                      apiGetTask("");
+                                    },
+                                    child: Image.asset(
+                                      g.wstrDarkMode
+                                          ? "assets/images/namewhite.png"
+                                          : "assets/images/nameblack.png",
+                                      width: 150,
                                     ),
-                                    Row(
-                                      children: [
-                                        Bounce(
-                                          duration:
-                                              const Duration(milliseconds: 110),
+                                  ),
+                                  Row(
+                                    children: [
+                                      Bounce(
+                                        duration:
+                                            const Duration(milliseconds: 110),
+                                        onPressed: () {
+                                          if (mounted) {
+                                            setState(() {
+                                              sideNavigation = "T";
+                                              lstrTSubTaskOf = "";
+                                            });
+                                          }
+                                          fnNewTask();
+                                          scaffoldKey.currentState
+                                              ?.openEndDrawer();
+                                        },
+                                        child: Container(
+                                          decoration:
+                                              boxGradientDecorationBase(24, 30),
+                                          padding: const EdgeInsets.symmetric(
+                                              vertical: 5, horizontal: 10),
+                                          child: Row(
+                                            children: [
+                                              const Icon(
+                                                Icons.add,
+                                                color: Colors.white,
+                                                size: 14,
+                                              ),
+                                              gapWC(10),
+                                              Container(
+                                                height: 15,
+                                                width: 1,
+                                                decoration: boxBaseDecoration(
+                                                    greyLight.withOpacity(0.7),
+                                                    10),
+                                              ),
+                                              gapWC(10),
+                                              tcn1('New Task    ', Colors.white,
+                                                  14)
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                      gapWC(10),
+                                      Container(
+                                        decoration:
+                                            boxBaseDecoration(greyLight, 5),
+                                        padding: const EdgeInsets.all(3),
+                                        child: Row(
+                                          children: [
+                                            wDayMode(
+                                                Icons.light_mode_outlined, "A"),
+                                            gapWC(5),
+                                            wDayMode(
+                                                Icons.dark_mode_outlined, "D"),
+                                          ],
+                                        ),
+                                      ),
+                                      gapWC(15),
+
+                                      gapWC(15),
+                                      // GestureDetector(
+                                      //   onTap: (){
+                                      //     fnLogOut1();
+                                      //   },
+                                      //   child: const Icon(Icons.logout,color: Colors.blueGrey,size: 20,)),
+                                      // gapWC(10),
+                                      blSideScreen
+                                          ? Container(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      horizontal: 10,
+                                                      vertical: 5),
+                                              decoration: boxOutlineCustom1(
+                                                  Colors.white,
+                                                  5,
+                                                  Colors.grey.withOpacity(0.5),
+                                                  0.5),
+                                              child: Row(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: [
+                                                  Column(
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .start,
+                                                    children: [
+                                                      tcn(
+                                                          g.wstrUserCd
+                                                              .toString(),
+                                                          Colors.black,
+                                                          10),
+                                                      tc(
+                                                          g.wstrUserName
+                                                              .toString(),
+                                                          Colors.black,
+                                                          12)
+                                                    ],
+                                                  ),
+                                                  gapWC(30),
+                                                  Container(
+                                                    padding:
+                                                        const EdgeInsets.all(5),
+                                                    decoration:
+                                                        boxBaseDecoration(
+                                                            color2, 30),
+                                                    child: const Icon(
+                                                      Icons.person,
+                                                      color: Colors.white,
+                                                      size: 20,
+                                                    ),
+                                                  )
+                                                ],
+                                              ),
+                                            )
+                                          : gapHC(0),
+                                      gapWC(10),
+                                      GestureDetector(
+                                        onTap: () {
+                                          if (mounted) {
+                                            setState(() {
+                                              blSideScreen =
+                                                  blSideScreen ? false : true;
+                                            });
+                                          }
+                                        },
+                                        child: Icon(
+                                          blSideScreen
+                                              ? Icons.navigate_before
+                                              : Icons.navigate_next_rounded,
+                                          color: Colors.blueGrey,
+                                          size: 20,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                        gapHC(10),
+                        Row(
+                          children: [
+                            Flexible(
+                              child: Bounce(
+                                duration: const Duration(milliseconds: 110),
+                                onPressed: () {
+                                  if (mounted) {
+                                    setState(() {
+                                      lstrTaskListPageNo = 0;
+                                      flStatus = "";
+                                      flOverDueYn = "N";
+                                    });
+                                  }
+                                  apiGetTask("");
+                                },
+                                child: Container(
+                                  decoration: boxDecoration(Colors.white, 5),
+                                  padding: const EdgeInsets.all(10),
+                                  child: Row(
+                                    children: [
+                                      const Icon(
+                                        Icons.list,
+                                        color: color2,
+                                        size: 30,
+                                      ),
+                                      gapWC(10),
+                                      Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          tc(
+                                              (openTicket +
+                                                      closedTicket +
+                                                      droppedTicket +
+                                                      holdTickets +
+                                                      activeTickets)
+                                                  .toString(),
+                                              color2,
+                                              25),
+                                          tcn1('Total Task  ', color3, 12),
+                                          tcn1(
+                                              'Filter ${(fOpenTicket + fClosedTicket + fDroppedTicket + fHoldTickets + fActiveTickets).toString()}  ',
+                                              Colors.blueAccent,
+                                              12),
+                                        ],
+                                      )
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                            gapWC(5),
+                            Flexible(
+                              child: Bounce(
+                                duration: const Duration(milliseconds: 110),
+                                onPressed: () {
+                                  if (mounted) {
+                                    setState(() {
+                                      lstrTaskListPageNo = 0;
+                                      flStatus = "P";
+                                      flOverDueYn = "N";
+                                    });
+                                  }
+                                  apiGetTask("");
+                                },
+                                child: Container(
+                                  decoration: boxDecoration(Colors.white, 5),
+                                  padding: const EdgeInsets.all(10),
+                                  child: Row(
+                                    children: [
+                                      const Icon(
+                                        Icons.task_alt,
+                                        color: Colors.green,
+                                        size: 30,
+                                      ),
+                                      gapWC(10),
+                                      Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          tc(
+                                              (openTicket +
+                                                      activeTickets +
+                                                      holdTickets)
+                                                  .toString(),
+                                              Colors.green,
+                                              25),
+                                          tcn1('Open Task  ', color3, 12),
+                                          tcn1(
+                                              'Filter ${(fActiveTickets + fHoldTickets + fOpenTicket).toString()}  ',
+                                              Colors.blueAccent,
+                                              12)
+                                        ],
+                                      )
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                            gapWC(5),
+                            Flexible(
+                              child: Bounce(
+                                duration: const Duration(milliseconds: 110),
+                                onPressed: () {
+                                  if (mounted) {
+                                    setState(() {
+                                      lstrTaskListPageNo = 0;
+                                      flStatus = "A";
+                                      flOverDueYn = "N";
+                                    });
+                                  }
+                                  apiGetTask("");
+                                },
+                                child: Container(
+                                  decoration: boxDecoration(Colors.white, 5),
+                                  padding: const EdgeInsets.all(10),
+                                  child: Row(
+                                    children: [
+                                      const Icon(
+                                        Icons.play_circle_outline_sharp,
+                                        color: color2,
+                                        size: 30,
+                                      ),
+                                      gapWC(10),
+                                      Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          tc(activeTickets.toString(), color2,
+                                              25),
+                                          tcn1('Started  ', color3, 12),
+                                          tcn1(
+                                              'Filter ${fActiveTickets.toString()}  ',
+                                              Colors.blueAccent,
+                                              12)
+                                        ],
+                                      )
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                            gapWC(5),
+                            Flexible(
+                              child: Bounce(
+                                duration: const Duration(milliseconds: 110),
+                                onPressed: () {
+                                  if (mounted) {
+                                    setState(() {
+                                      lstrTaskListPageNo = 0;
+                                      flStatus = "H";
+                                      flOverDueYn = "N";
+                                    });
+                                  }
+                                  apiGetTask("");
+                                },
+                                child: Container(
+                                  decoration: boxDecoration(Colors.white, 5),
+                                  padding: const EdgeInsets.all(10),
+                                  child: Row(
+                                    children: [
+                                      const Icon(
+                                        Icons.pause,
+                                        color: Colors.orange,
+                                        size: 30,
+                                      ),
+                                      gapWC(10),
+                                      Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          tc(holdTickets.toString(),
+                                              Colors.orange, 25),
+                                          tcn1('Hold  ', color3, 12),
+                                          tcn1(
+                                              'Filter ${fHoldTickets.toString()}  ',
+                                              Colors.blueAccent,
+                                              12)
+                                        ],
+                                      )
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                            gapWC(5),
+                            Flexible(
+                              child: Bounce(
+                                duration: const Duration(milliseconds: 110),
+                                onPressed: () {
+                                  if (mounted) {
+                                    setState(() {
+                                      lstrTaskListPageNo = 0;
+                                      flStatus = "C";
+                                      flOverDueYn = "N";
+                                    });
+                                  }
+                                  apiGetTask("");
+                                },
+                                child: Container(
+                                  decoration: boxDecoration(Colors.white, 5),
+                                  padding: const EdgeInsets.all(10),
+                                  child: Row(
+                                    children: [
+                                      const Icon(
+                                        Icons.thumb_up_alt_outlined,
+                                        color: Colors.red,
+                                        size: 30,
+                                      ),
+                                      gapWC(10),
+                                      Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          tc(closedTicket.toString(),
+                                              Colors.red, 25),
+                                          tcn1('Closed Task  ', color3, 12),
+                                          tcn1(
+                                              'Filter ${fClosedTicket.toString()}  ',
+                                              Colors.blueAccent,
+                                              12)
+                                        ],
+                                      )
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                            // gapWC(5),
+                            // Flexible(
+                            //   child: Bounce(
+                            //     duration: const Duration(milliseconds: 110),
+                            //     onPressed: (){
+                            //       if(mounted){
+                            //         setState(() {
+                            //           lstrTaskListPageNo = 0;
+                            //           flStatus = "D";
+                            //           flOverDueYn = "N";
+                            //         });
+                            //       }
+                            //       apiGetTask("");
+                            //     },
+                            //     child: Container(
+                            //       decoration: boxDecoration(Colors.white, 5),
+                            //       padding: const EdgeInsets.all(10),
+                            //       child: Row(
+                            //         children: [
+                            //           const Icon(Icons.cancel_outlined,color: Colors.purple,size: 30,),
+                            //           gapWC(10),
+                            //           Column(
+                            //             crossAxisAlignment: CrossAxisAlignment.start,
+                            //             children: [
+                            //               tc(droppedTicket.toString(), Colors.purple , 25),
+                            //               ts('Dropped Task ', color3 , 12)
+                            //             ],
+                            //           )
+                            //
+                            //         ],
+                            //       ),
+                            //     ),
+                            //   ),
+                            // ),
+                            gapWC(5),
+                            Flexible(
+                              child: Bounce(
+                                duration: const Duration(milliseconds: 110),
+                                onPressed: () {
+                                  if (mounted) {
+                                    setState(() {
+                                      lstrTaskListPageNo = 0;
+                                      flStatus = "";
+                                      flOverDueYn = "Y";
+                                    });
+                                  }
+                                  apiGetTask("");
+                                },
+                                child: Container(
+                                  decoration: boxDecoration(Colors.white, 5),
+                                  padding: const EdgeInsets.all(10),
+                                  child: Row(
+                                    children: [
+                                      const Icon(
+                                        Icons.upcoming,
+                                        color: Colors.red,
+                                        size: 30,
+                                      ),
+                                      gapWC(10),
+                                      Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          tc(overdueTicket.toString(),
+                                              Colors.red, 25),
+                                          tcn1('Overdue ', Colors.red, 12),
+                                          tcn1(
+                                              'Filter ${fOverdueTicket.toString()}  ',
+                                              Colors.blueAccent,
+                                              12)
+                                        ],
+                                      )
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        gapHC(10),
+                        Container(
+                          margin: const EdgeInsets.only(bottom: 1),
+                          padding: const EdgeInsets.all(5),
+                          decoration: boxDecoration(Colors.white, 5),
+                          child: Column(
+                            children: [
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  !blSearch
+                                      ? tc(
+                                          'Task Details', Colors.deepOrange, 15)
+                                      : gapHC(0),
+                                  gapWC(10),
+                                  !blSearch && flStatus.isNotEmpty
+                                      ? tc(
+                                          flOverDueYn == "Y"
+                                              ? "Overdue Task"
+                                              : flStatus == "P"
+                                                  ? "Open Task"
+                                                  : flStatus == "C"
+                                                      ? "Closed Task"
+                                                      : flStatus == "D"
+                                                          ? "Dropped Task"
+                                                          : "",
+                                          Colors.black,
+                                          15)
+                                      : gapHC(0),
+                                  blSearch
+                                      ? Expanded(
+                                          child: Container(
+                                            height: 30,
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 15),
+                                            child: TextFormField(
+                                              controller: txtSearch,
+                                              onChanged: (val) {
+                                                if (mounted) {
+                                                  setState(() {
+                                                    lstrTaskListPageNo = 0;
+                                                  });
+                                                }
+                                                apiGetTask("");
+                                              },
+                                              decoration: const InputDecoration(
+                                                hintText: 'Search....',
+                                                border: InputBorder.none,
+                                              ),
+                                            ),
+                                          ),
+                                        )
+                                      : gapHC(0),
+                                  Row(
+                                    children: [
+                                      InkWell(
+                                          onTap: () {
+                                            if (mounted) {
+                                              setState(() {
+                                                txtSearch.clear();
+                                                blSearch =
+                                                    blSearch ? false : true;
+                                                lstrTaskListPageNo = 0;
+                                              });
+
+                                              apiGetTask("");
+                                            }
+                                          },
+                                          child: Icon(
+                                            blSearch
+                                                ? Icons.close
+                                                : Icons.search,
+                                            color: Colors.blueGrey,
+                                            size: 20,
+                                          )),
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(
+                                            vertical: 2, horizontal: 10),
+                                        child: Row(
+                                          children: [
+                                            wTaskListViewIcon(
+                                                Icons.view_kanban_outlined,
+                                                "K"),
+                                            gapWC(5),
+                                            wTaskListViewIcon(Icons.list, "L"),
+                                            gapWC(5),
+                                            wTaskListViewIcon(
+                                                Icons.grid_view_rounded, "G"),
+                                          ],
+                                        ),
+                                      ),
+
+                                      gapWC(20),
+                                      Bounce(
                                           onPressed: () {
                                             if (mounted) {
                                               setState(() {
@@ -484,759 +1021,208 @@ class _UserHomeState extends State<UserHome> {
                                             scaffoldKey.currentState
                                                 ?.openEndDrawer();
                                           },
-                                          child: Container(
-                                            decoration:
-                                                boxGradientDecorationBase(
-                                                    24, 30),
-                                            padding: const EdgeInsets.symmetric(
-                                                vertical: 5, horizontal: 10),
-                                            child: Row(
-                                              children: [
-                                                const Icon(
-                                                  Icons.add,
-                                                  color: Colors.white,
-                                                  size: 14,
-                                                ),
-                                                gapWC(10),
-                                                Container(
-                                                  height: 15,
-                                                  width: 1,
-                                                  decoration: boxBaseDecoration(
-                                                      greyLight
-                                                          .withOpacity(0.7),
-                                                      10),
-                                                ),
-                                                gapWC(10),
-                                                tcn1('New Task    ',
-                                                    Colors.white, 14)
-                                              ],
-                                            ),
-                                          ),
-                                        ),
-                                        gapWC(10),
-                                        Container(
-                                          decoration:
-                                              boxBaseDecoration(greyLight, 5),
-                                          padding: const EdgeInsets.all(3),
-                                          child: Row(
-                                            children: [
-                                              wDayMode(
-                                                  Icons.light_mode_outlined,
-                                                  "A"),
-                                              gapWC(5),
-                                              wDayMode(Icons.dark_mode_outlined,
-                                                  "D"),
-                                            ],
-                                          ),
-                                        ),
-                                        gapWC(15),
-
-                                        gapWC(15),
-                                        // GestureDetector(
-                                        //   onTap: (){
-                                        //     fnLogOut1();
-                                        //   },
-                                        //   child: const Icon(Icons.logout,color: Colors.blueGrey,size: 20,)),
-                                        // gapWC(10),
-                                        blSideScreen
-                                            ? Container(
-                                                padding:
-                                                    const EdgeInsets.symmetric(
-                                                        horizontal: 10,
-                                                        vertical: 5),
-                                                decoration: boxOutlineCustom1(
-                                                    Colors.white,
-                                                    5,
-                                                    Colors.grey
-                                                        .withOpacity(0.5),
-                                                    0.5),
-                                                child: Row(
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.start,
-                                                  children: [
-                                                    Column(
-                                                      crossAxisAlignment:
-                                                          CrossAxisAlignment
-                                                              .start,
-                                                      children: [
-                                                        tcn(
-                                                            g.wstrUserCd
-                                                                .toString(),
-                                                            Colors.black,
-                                                            10),
-                                                        tc(
-                                                            g.wstrUserName
-                                                                .toString(),
-                                                            Colors.black,
-                                                            12)
-                                                      ],
-                                                    ),
-                                                    gapWC(30),
-                                                    Container(
-                                                      padding:
-                                                          const EdgeInsets.all(
-                                                              5),
-                                                      decoration:
-                                                          boxBaseDecoration(
-                                                              color2, 30),
-                                                      child: const Icon(
-                                                        Icons.person,
-                                                        color: Colors.white,
-                                                        size: 20,
-                                                      ),
-                                                    )
-                                                  ],
-                                                ),
-                                              )
-                                            : gapHC(0),
-                                        gapWC(10),
-                                        GestureDetector(
-                                            onTap: () {
-                                              if (mounted) {
-                                                setState(() {
-                                                  blSideScreen = blSideScreen
-                                                      ? false
-                                                      : true;
-                                                });
-                                              }
-                                            },
-                                            child: Icon(
-                                              blSideScreen
-                                                  ? Icons.navigate_before
-                                                  : Icons.navigate_next_rounded,
-                                              color: Colors.blueGrey,
-                                              size: 20,
-                                            )),
-                                      ],
-                                    )
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ),
-                          gapHC(10),
-                          Row(
-                            children: [
-                              Flexible(
-                                child: Bounce(
-                                  duration: const Duration(milliseconds: 110),
-                                  onPressed: () {
-                                    if (mounted) {
-                                      setState(() {
-                                        lstrTaskListPageNo = 0;
-                                        flStatus = "";
-                                        flOverDueYn = "N";
-                                      });
-                                    }
-                                    apiGetTask("");
-                                  },
-                                  child: Container(
-                                    decoration: boxDecoration(Colors.white, 5),
-                                    padding: const EdgeInsets.all(10),
-                                    child: Row(
-                                      children: [
-                                        const Icon(
-                                          Icons.list,
-                                          color: color2,
-                                          size: 30,
-                                        ),
-                                        gapWC(10),
-                                        Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            tc(
-                                                (openTicket +
-                                                        closedTicket +
-                                                        droppedTicket +
-                                                        holdTickets +
-                                                        activeTickets)
-                                                    .toString(),
-                                                color2,
-                                                25),
-                                            tcn1('Total Task  ', color3, 12),
-                                            tcn1(
-                                                'Filter ${(fOpenTicket + fClosedTicket + fDroppedTicket + fHoldTickets + fActiveTickets).toString()}  ',
-                                                Colors.blueAccent,
-                                                12)
-                                          ],
-                                        )
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              gapWC(5),
-                              Flexible(
-                                child: Bounce(
-                                  duration: const Duration(milliseconds: 110),
-                                  onPressed: () {
-                                    if (mounted) {
-                                      setState(() {
-                                        lstrTaskListPageNo = 0;
-                                        flStatus = "P";
-                                        flOverDueYn = "N";
-                                      });
-                                    }
-                                    apiGetTask("");
-                                  },
-                                  child: Container(
-                                    decoration: boxDecoration(Colors.white, 5),
-                                    padding: const EdgeInsets.all(10),
-                                    child: Row(
-                                      children: [
-                                        const Icon(
-                                          Icons.task_alt,
-                                          color: Colors.green,
-                                          size: 30,
-                                        ),
-                                        gapWC(10),
-                                        Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            tc(
-                                                (openTicket +
-                                                        activeTickets +
-                                                        holdTickets)
-                                                    .toString(),
-                                                Colors.green,
-                                                25),
-                                            tcn1('Open Task  ', color3, 12),
-                                            tcn1(
-                                                'Filter ${(fActiveTickets + fHoldTickets + fOpenTicket).toString()}  ',
-                                                Colors.blueAccent,
-                                                12)
-                                          ],
-                                        )
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              gapWC(5),
-                              Flexible(
-                                child: Bounce(
-                                  duration: const Duration(milliseconds: 110),
-                                  onPressed: () {
-                                    if (mounted) {
-                                      setState(() {
-                                        lstrTaskListPageNo = 0;
-                                        flStatus = "A";
-                                        flOverDueYn = "N";
-                                      });
-                                    }
-                                    apiGetTask("");
-                                  },
-                                  child: Container(
-                                    decoration: boxDecoration(Colors.white, 5),
-                                    padding: const EdgeInsets.all(10),
-                                    child: Row(
-                                      children: [
-                                        const Icon(
-                                          Icons.play_circle_outline_sharp,
-                                          color: color2,
-                                          size: 30,
-                                        ),
-                                        gapWC(10),
-                                        Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            tc(activeTickets.toString(), color2,
-                                                25),
-                                            tcn1('Started  ', color3, 12),
-                                            tcn1(
-                                                'Filter ${fActiveTickets.toString()}  ',
-                                                Colors.blueAccent,
-                                                12)
-                                          ],
-                                        )
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              gapWC(5),
-                              Flexible(
-                                child: Bounce(
-                                  duration: const Duration(milliseconds: 110),
-                                  onPressed: () {
-                                    if (mounted) {
-                                      setState(() {
-                                        lstrTaskListPageNo = 0;
-                                        flStatus = "H";
-                                        flOverDueYn = "N";
-                                      });
-                                    }
-                                    apiGetTask("");
-                                  },
-                                  child: Container(
-                                    decoration: boxDecoration(Colors.white, 5),
-                                    padding: const EdgeInsets.all(10),
-                                    child: Row(
-                                      children: [
-                                        const Icon(
-                                          Icons.pause,
-                                          color: Colors.orange,
-                                          size: 30,
-                                        ),
-                                        gapWC(10),
-                                        Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            tc(holdTickets.toString(),
-                                                Colors.orange, 25),
-                                            tcn1('Hold  ', color3, 12),
-                                            tcn1(
-                                                'Filter ${fHoldTickets.toString()}  ',
-                                                Colors.blueAccent,
-                                                12)
-                                          ],
-                                        )
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              gapWC(5),
-                              Flexible(
-                                child: Bounce(
-                                  duration: const Duration(milliseconds: 110),
-                                  onPressed: () {
-                                    if (mounted) {
-                                      setState(() {
-                                        lstrTaskListPageNo = 0;
-                                        flStatus = "C";
-                                        flOverDueYn = "N";
-                                      });
-                                    }
-                                    apiGetTask("");
-                                  },
-                                  child: Container(
-                                    decoration: boxDecoration(Colors.white, 5),
-                                    padding: const EdgeInsets.all(10),
-                                    child: Row(
-                                      children: [
-                                        const Icon(
-                                          Icons.thumb_up_alt_outlined,
-                                          color: Colors.red,
-                                          size: 30,
-                                        ),
-                                        gapWC(10),
-                                        Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            tc(closedTicket.toString(),
-                                                Colors.red, 25),
-                                            tcn1('Closed Task  ', color3, 12),
-                                            tcn1(
-                                                'Filter ${fClosedTicket.toString()}  ',
-                                                Colors.blueAccent,
-                                                12)
-                                          ],
-                                        )
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              // gapWC(5),
-                              // Flexible(
-                              //   child: Bounce(
-                              //     duration: const Duration(milliseconds: 110),
-                              //     onPressed: (){
-                              //       if(mounted){
-                              //         setState(() {
-                              //           lstrTaskListPageNo = 0;
-                              //           flStatus = "D";
-                              //           flOverDueYn = "N";
-                              //         });
-                              //       }
-                              //       apiGetTask("");
-                              //     },
-                              //     child: Container(
-                              //       decoration: boxDecoration(Colors.white, 5),
-                              //       padding: const EdgeInsets.all(10),
-                              //       child: Row(
-                              //         children: [
-                              //           const Icon(Icons.cancel_outlined,color: Colors.purple,size: 30,),
-                              //           gapWC(10),
-                              //           Column(
-                              //             crossAxisAlignment: CrossAxisAlignment.start,
-                              //             children: [
-                              //               tc(droppedTicket.toString(), Colors.purple , 25),
-                              //               ts('Dropped Task ', color3 , 12)
-                              //             ],
-                              //           )
-                              //
-                              //         ],
-                              //       ),
-                              //     ),
-                              //   ),
-                              // ),
-                              gapWC(5),
-                              Flexible(
-                                child: Bounce(
-                                  duration: const Duration(milliseconds: 110),
-                                  onPressed: () {
-                                    if (mounted) {
-                                      setState(() {
-                                        lstrTaskListPageNo = 0;
-                                        flStatus = "";
-                                        flOverDueYn = "Y";
-                                      });
-                                    }
-                                    apiGetTask("");
-                                  },
-                                  child: Container(
-                                    decoration: boxDecoration(Colors.white, 5),
-                                    padding: const EdgeInsets.all(10),
-                                    child: Row(
-                                      children: [
-                                        const Icon(
-                                          Icons.upcoming,
-                                          color: Colors.red,
-                                          size: 30,
-                                        ),
-                                        gapWC(10),
-                                        Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            tc(overdueTicket.toString(),
-                                                Colors.red, 25),
-                                            tcn1('Overdue ', Colors.red, 12),
-                                            tcn1(
-                                                'Filter ${fOverdueTicket.toString()}  ',
-                                                Colors.blueAccent,
-                                                12)
-                                          ],
-                                        )
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                          gapHC(10),
-                          Container(
-                            margin: const EdgeInsets.only(bottom: 1),
-                            padding: const EdgeInsets.all(5),
-                            decoration: boxDecoration(Colors.white, 5),
-                            child: Column(
-                              children: [
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    !blSearch
-                                        ? tc('Task Details', Colors.deepOrange,
-                                            15)
-                                        : gapHC(0),
-                                    gapWC(10),
-                                    !blSearch && flStatus.isNotEmpty
-                                        ? tc(
-                                            flOverDueYn == "Y"
-                                                ? "Overdue Task"
-                                                : flStatus == "P"
-                                                    ? "Open Task"
-                                                    : flStatus == "C"
-                                                        ? "Closed Task"
-                                                        : flStatus == "D"
-                                                            ? "Dropped Task"
-                                                            : "",
-                                            Colors.black,
-                                            15)
-                                        : gapHC(0),
-                                    blSearch
-                                        ? Expanded(
-                                            child: Container(
-                                              height: 30,
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                      horizontal: 15),
-                                              child: TextFormField(
-                                                controller: txtSearch,
-                                                onChanged: (val) {
-                                                  if (mounted) {
-                                                    setState(() {
-                                                      lstrTaskListPageNo = 0;
-                                                    });
-                                                  }
-                                                  apiGetTask("");
-                                                },
-                                                decoration:
-                                                    const InputDecoration(
-                                                  hintText: 'Search....',
-                                                  border: InputBorder.none,
-                                                ),
-                                              ),
-                                            ),
-                                          )
-                                        : gapHC(0),
-                                    Row(
-                                      children: [
-                                        InkWell(
-                                            onTap: () {
-                                              if (mounted) {
-                                                setState(() {
-                                                  txtSearch.clear();
-                                                  blSearch =
-                                                      blSearch ? false : true;
-                                                  lstrTaskListPageNo = 0;
-                                                });
-
-                                                apiGetTask("");
-                                              }
-                                            },
-                                            child: Icon(
-                                              blSearch
-                                                  ? Icons.close
-                                                  : Icons.search,
-                                              color: Colors.blueGrey,
-                                              size: 20,
-                                            )),
-                                        Container(
-                                          padding: const EdgeInsets.symmetric(
-                                              vertical: 2, horizontal: 10),
-                                          child: Row(
-                                            children: [
-                                              wTaskListViewIcon(
-                                                  Icons.view_kanban_outlined,
-                                                  "K"),
-                                              gapWC(5),
-                                              wTaskListViewIcon(
-                                                  Icons.list, "L"),
-                                              gapWC(5),
-                                              wTaskListViewIcon(
-                                                  Icons.grid_view_rounded, "G"),
-                                            ],
-                                          ),
-                                        ),
-
-                                        gapWC(20),
-                                        Bounce(
-                                            onPressed: () {
-                                              if (mounted) {
-                                                setState(() {
-                                                  sideNavigation = "T";
-                                                  lstrTSubTaskOf = "";
-                                                });
-                                              }
-                                              fnNewTask();
-                                              scaffoldKey.currentState
-                                                  ?.openEndDrawer();
-                                            },
-                                            duration: const Duration(
-                                                milliseconds: 110),
-                                            child: const Icon(
-                                              Icons.add_circle_outlined,
-                                              color: Colors.deepOrange,
-                                              size: 20,
-                                            )),
-                                        gapWC(10),
-                                        Bounce(
-                                            onPressed: () {
-                                              if (mounted) {
-                                                setState(() {
-                                                  sideNavigation = "F";
-                                                });
-                                              }
-                                              scaffoldKey.currentState
-                                                  ?.openEndDrawer();
-                                            },
-                                            duration: const Duration(
-                                                milliseconds: 110),
-                                            child: const Icon(
-                                              Icons.filter_list_alt,
-                                              color: Colors.deepOrange,
-                                              size: 20,
-                                            )),
-                                        gapWC(20),
-
-                                        Bounce(
+                                          duration:
+                                              const Duration(milliseconds: 110),
+                                          child: const Icon(
+                                            Icons.add_circle_outlined,
+                                            color: Colors.deepOrange,
+                                            size: 20,
+                                          )),
+                                      gapWC(10),
+                                      Bounce(
                                           onPressed: () {
                                             if (mounted) {
-                                              var filDate =
-                                                  setDate(2, DateTime.now());
                                               setState(() {
-                                                flCreateDate = filDate;
+                                                sideNavigation = "F";
                                               });
                                             }
-                                            apiGetTask("F");
+                                            scaffoldKey.currentState
+                                                ?.openEndDrawer();
                                           },
                                           duration:
                                               const Duration(milliseconds: 110),
-                                          child: Container(
-                                            padding: const EdgeInsets.symmetric(
-                                                horizontal: 20, vertical: 4),
-                                            decoration:
-                                                boxGradientDecorationBase(
-                                                    7, 30),
-                                            child: Row(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.center,
-                                              children: [
-                                                const Icon(
-                                                  Icons.calendar_month,
-                                                  color: Colors.white,
-                                                  size: 12,
-                                                ),
-                                                gapWC(5),
-                                                tcn1('Today', Colors.white, 12),
-                                              ],
-                                            ),
+                                          child: const Icon(
+                                            Icons.filter_list_alt,
+                                            color: Colors.deepOrange,
+                                            size: 20,
+                                          )),
+                                      gapWC(20),
+
+                                      Bounce(
+                                        onPressed: () {
+                                          if (mounted) {
+                                            var filDate =
+                                                setDate(2, DateTime.now());
+                                            setState(() {
+                                              flCreateDate = filDate;
+                                            });
+                                          }
+                                          apiGetTask("F");
+                                        },
+                                        duration:
+                                            const Duration(milliseconds: 110),
+                                        child: Container(
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 20, vertical: 4),
+                                          decoration:
+                                              boxGradientDecorationBase(7, 30),
+                                          child: Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: [
+                                              const Icon(
+                                                Icons.calendar_month,
+                                                color: Colors.white,
+                                                size: 12,
+                                              ),
+                                              gapWC(5),
+                                              tcn1('Today', Colors.white, 12),
+                                            ],
                                           ),
                                         ),
-                                        gapWC(10),
-                                        Bounce(
-                                          onPressed: () {
-                                            //fnExport();
-                                            apiGetTaskExport();
-                                            //fnShowNotification("msg");
-                                          },
-                                          duration:
-                                              const Duration(milliseconds: 110),
-                                          child: Container(
-                                            padding: const EdgeInsets.symmetric(
-                                                horizontal: 20, vertical: 4),
-                                            decoration:
-                                                boxGradientDecorationBase(
-                                                    6, 30),
-                                            child: Row(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.center,
-                                              children: [
-                                                const Icon(
-                                                  Icons.download,
-                                                  color: Colors.white,
-                                                  size: 12,
-                                                ),
-                                                gapWC(5),
-                                                tcn1(
-                                                    'Export', Colors.white, 12),
-                                              ],
-                                            ),
+                                      ),
+                                      gapWC(10),
+                                      Bounce(
+                                        onPressed: () {
+                                          //fnExport();
+                                          apiGetTaskExport();
+                                          //fnShowNotification("msg");
+                                        },
+                                        duration:
+                                            const Duration(milliseconds: 110),
+                                        child: Container(
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 20, vertical: 4),
+                                          decoration:
+                                              boxGradientDecorationBase(6, 30),
+                                          child: Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: [
+                                              const Icon(
+                                                Icons.download,
+                                                color: Colors.white,
+                                                size: 12,
+                                              ),
+                                              gapWC(5),
+                                              tcn1('Export', Colors.white, 12),
+                                            ],
                                           ),
                                         ),
-                                        gapWC(10),
-                                        Bounce(
-                                          onPressed: () {
-                                            fnFilterClear();
-                                            apiGetTask("");
-                                          },
-                                          duration:
-                                              const Duration(milliseconds: 110),
-                                          child: Container(
-                                            padding: const EdgeInsets.symmetric(
-                                                horizontal: 20, vertical: 4),
-                                            decoration: boxOutlineCustom1(
-                                                Colors.white,
-                                                30,
-                                                Colors.black,
-                                                0.5),
-                                            child: Row(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.center,
-                                              children: [
-                                                const Icon(
-                                                  Icons.clear_all_outlined,
-                                                  color: Colors.black,
-                                                  size: 12,
-                                                ),
-                                                gapWC(5),
-                                                tcn1('Clear', Colors.black, 12),
-                                              ],
-                                            ),
+                                      ),
+                                      gapWC(10),
+                                      Bounce(
+                                        onPressed: () {
+                                          fnFilterClear();
+                                          apiGetTask("");
+                                        },
+                                        duration:
+                                            const Duration(milliseconds: 110),
+                                        child: Container(
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 20, vertical: 4),
+                                          decoration: boxOutlineCustom1(
+                                              Colors.white,
+                                              30,
+                                              Colors.black,
+                                              0.5),
+                                          child: Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: [
+                                              const Icon(
+                                                Icons.clear_all_outlined,
+                                                color: Colors.black,
+                                                size: 12,
+                                              ),
+                                              gapWC(5),
+                                              tcn1('Clear', Colors.black, 12),
+                                            ],
                                           ),
                                         ),
-                                        gapWC(10),
-                                        // Row(
-                                        //   mainAxisAlignment: MainAxisAlignment.end,
-                                        //   children: [
-                                        //     GestureDetector(
-                                        //         onTap: (){
-                                        //           // if(lstrTaskListPageNo == 0){
-                                        //           //   return;
-                                        //           // }
-                                        //           // if(mounted){
-                                        //           //   setState(() {
-                                        //           //     lstrTaskListPageNo =lstrTaskListPageNo-1;
-                                        //           //   });
-                                        //           //   apiGetTask("");
-                                        //           // }
-                                        //         },
-                                        //         child: const Icon(Icons.arrow_back_ios_new_rounded,color: Colors.black,size: 15,)),
-                                        //     gapWC(10),
-                                        //     lstrTaskList.isNotEmpty?
-                                        //     GestureDetector(
-                                        //         onTap: (){
-                                        //           // if(mounted){
-                                        //           //   setState(() {
-                                        //           //     if(lstrTaskList.isNotEmpty){
-                                        //           //       lstrTaskListPageNo =lstrTaskListPageNo+1;
-                                        //           //     }
-                                        //           //
-                                        //           //   });
-                                        //           //   apiGetTask("");
-                                        //           // }
-                                        //         },
-                                        //         child: const Icon(Icons.arrow_forward_ios_rounded,color: Colors.black,size: 15,)):gapHC(0),
-                                        //   ],
-                                        // )
-                                      ],
-                                    )
-                                  ],
-                                )
-                              ],
-                            ),
+                                      ),
+                                      gapWC(10),
+                                      // Row(
+                                      //   mainAxisAlignment: MainAxisAlignment.end,
+                                      //   children: [
+                                      //     GestureDetector(
+                                      //         onTap: (){
+                                      //           // if(lstrTaskListPageNo == 0){
+                                      //           //   return;
+                                      //           // }
+                                      //           // if(mounted){
+                                      //           //   setState(() {
+                                      //           //     lstrTaskListPageNo =lstrTaskListPageNo-1;
+                                      //           //   });
+                                      //           //   apiGetTask("");
+                                      //           // }
+                                      //         },
+                                      //         child: const Icon(Icons.arrow_back_ios_new_rounded,color: Colors.black,size: 15,)),
+                                      //     gapWC(10),
+                                      //     lstrTaskList.isNotEmpty?
+                                      //     GestureDetector(
+                                      //         onTap: (){
+                                      //           // if(mounted){
+                                      //           //   setState(() {
+                                      //           //     if(lstrTaskList.isNotEmpty){
+                                      //           //       lstrTaskListPageNo =lstrTaskListPageNo+1;
+                                      //           //     }
+                                      //           //
+                                      //           //   });
+                                      //           //   apiGetTask("");
+                                      //           // }
+                                      //         },
+                                      //         child: const Icon(Icons.arrow_forward_ios_rounded,color: Colors.black,size: 15,)):gapHC(0),
+                                      //   ],
+                                      // )
+                                    ],
+                                  )
+                                ],
+                              )
+                            ],
                           ),
-                          Container(
-                            margin: const EdgeInsets.only(bottom: 5),
-                            padding: const EdgeInsets.all(5),
-                            decoration: boxDecoration(Colors.white, 5),
+                        ),
+                        Container(
+                          margin: const EdgeInsets.only(bottom: 5),
+                          padding: const EdgeInsets.all(5),
+                          decoration: boxDecoration(Colors.white, 5),
+                          child: Column(
+                            children: [
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  wRowHead("Task", "DOCNO", 3, "Y"),
+                                  wRowHead("Issue", "ISSUE_TYPE", 1, "Y"),
+                                  wRowHead("Company", "COMPANY_NAME", 2, "Y"),
+                                  wRowHead("Module", "MODULE", 1, "Y"),
+                                  wRowHead("Department", "DEPARTMENT", 1, "Y"),
+                                  wRowHead("Status", "STATUS", 1, "Y"),
+                                  wRowHead(
+                                      "Create Date", "CREATE_DATE", 1, "Y"),
+                                  //wRowHead("Deadline","DEADLINE",1,"Y"),
+                                  wRowHead("Active User", "ACTIVE", 1, "Y"),
+                                  //wRowHead("Assigned By","ASSIGNED_USER",1,"Y"),
+                                  wRowHead("Created By", "CREATE_USER", 1, "Y"),
+                                ],
+                              )
+                            ],
+                          ),
+                        ),
+                        Expanded(
+                          child: SingleChildScrollView(
+                            controller: scrollController,
                             child: Column(
-                              children: [
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    wRowHead("Task", "DOCNO", 3, "Y"),
-                                    wRowHead("Issue", "ISSUE_TYPE", 1, "Y"),
-                                    wRowHead("Company", "COMPANY_NAME", 2, "Y"),
-                                    wRowHead("Module", "MODULE", 1, "Y"),
-                                    wRowHead(
-                                        "Department", "DEPARTMENT", 1, "Y"),
-                                    wRowHead("Status", "STATUS", 1, "Y"),
-                                    wRowHead(
-                                        "Create Date", "CREATE_DATE", 1, "Y"),
-                                    //wRowHead("Deadline","DEADLINE",1,"Y"),
-                                    wRowHead("Active User", "ACTIVE", 1, "Y"),
-                                    //wRowHead("Assigned By","ASSIGNED_USER",1,"Y"),
-                                    wRowHead(
-                                        "Created By", "CREATE_USER", 1, "Y"),
-                                  ],
-                                )
-                              ],
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: wTaskList(),
                             ),
                           ),
-                          Expanded(
-                            child: SingleChildScrollView(
-                              controller: scrollController,
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: wTaskList(),
-                              ),
-                            ),
-                          ),
-                          gapHC(20)
-                        ],
-                      ),
-                    )),
+                        ),
+                        gapHC(20)
+                      ],
+                    ),
+                  ),
+                ),
                 blSideScreen
                     ? Container(
                         decoration: boxDecoration(Colors.white, 10),
