@@ -52,8 +52,7 @@ class _FilterHeadState extends State<FilterHead> {
                                   tc(f.title, color3, 12),
                                   Bounce(
                                     onPressed: () {},
-                                    duration:
-                                        const Duration(milliseconds: 110),
+                                    duration: const Duration(milliseconds: 110),
                                     child: const Icon(
                                       Icons.filter_alt_rounded,
                                       color: Colors.black,
@@ -67,7 +66,7 @@ class _FilterHeadState extends State<FilterHead> {
                           ],
                         ),
                       ),
-                  Bounce(
+                  /*Bounce(
                     onPressed: () {
                       showHeadCheckList();
                     },
@@ -77,13 +76,78 @@ class _FilterHeadState extends State<FilterHead> {
                       color: Colors.deepOrange,
                       size: 20,
                     ),
+                  ),*/
+                  PopupMenuButton(
+                    position: PopupMenuPosition.under,
+                    offset: const Offset(5, 10),
+                    child: const Icon(
+                      Icons.checklist,
+                      color: Colors.deepOrange,
+                      size: 20,
+                    ),
+                    itemBuilder: (context) {
+                      return [
+                        for (var e in defaultHeadList)
+                          PopupMenuItem(
+                            child: StatefulBuilder(
+                              builder: (BuildContext context,
+                                  void Function(void Function()) updateState) {
+                                return InkWell(
+                                  onTap: () {
+                                    setState(() {
+                                      updateState(() {
+                                        e.isActive = !e.isActive;
+                                      });
+                                    });
+                                  },
+                                  child: Container(
+                                    decoration: boxOutlineCustom(
+                                        Colors.white, 0, Colors.grey.shade200),
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 15,
+                                        vertical: 10,
+                                      ),
+                                      child: Row(
+                                        children: [
+                                          Container(
+                                            width: 15,
+                                            height: 15,
+                                            decoration: boxOutlineCustom(
+                                                e.isActive
+                                                    ? color2
+                                                    : Colors.white,
+                                                5,
+                                                e.isActive
+                                                    ? color2
+                                                    : Colors.grey.shade300),
+                                            child: const Center(
+                                              child: Icon(
+                                                Icons.check,
+                                                color: Colors.white,
+                                                size: 12,
+                                              ),
+                                            ),
+                                          ),
+                                          gapWC(5),
+                                          tc(e.title, Colors.black, 14),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                      ];
+                    },
                   ),
                 ],
               ),
             ),
           ],
         ),
-        if (showCheckList)
+        /*if (showCheckList)
           InkWell(
             onTap: () {
               hideHeadCheckList();
@@ -158,7 +222,7 @@ class _FilterHeadState extends State<FilterHead> {
                 ),
               ),
             ),
-          ),
+          ),*/
       ],
     );
   }
@@ -221,14 +285,14 @@ class _FilterHeadState extends State<FilterHead> {
     );
   }*/
 
-  groupItemBuilder(List ungroupedData, List<GroupingData> groupedData,
+  /*groupItemBuilder(List ungroupedData, List<GroupingData> groupedData,
       int level, int index, List groups) {
-    /*List<GroupingData> formattedData = [];
+    */ /*List<GroupingData> formattedData = [];
     for (var x in ungroupedData) {
       formattedData.add(GroupingData.fromJson(x));
     }
-    groupedData = [];*/
-    /*if (groups.isNotEmpty) {
+    groupedData = [];*/ /*
+    */ /*if (groups.isNotEmpty) {
       for (var d in formattedData) {
         dynamic count = 0;
         double hr = 0.0;
@@ -267,10 +331,10 @@ class _FilterHeadState extends State<FilterHead> {
           }
         }
       }
-      */ /*for (int i = 0; i < groupedData.length; i++) {
+      */ /* */ /*for (int i = 0; i < groupedData.length; i++) {
         _groupItemsVisible['$level+$i'] = false;
-      }*/ /*
-    }*/
+      }*/ /* */ /*
+    }*/ /*
     return Column(
       children: [
         Padding(
@@ -365,22 +429,24 @@ class _FilterHeadState extends State<FilterHead> {
     setState(() {
       showCheckList = false;
     });
-  }
+  }*/
 }
 
 List<GroupingData> groupedData = [];
 
-Map _groupItemsVisible = {};
+// Map _groupItemsVisible = {};
 
 class FilterHeadItem {
   String key;
   String title;
+  String sort;
   int width;
   bool isActive;
 
   FilterHeadItem({
     required this.key,
     required this.title,
+    required this.sort,
     required this.width,
     required this.isActive,
   });
@@ -388,63 +454,76 @@ class FilterHeadItem {
 
 List<FilterHeadItem> defaultHeadList = [
   FilterHeadItem(
-    key: '',
+    key: 'DOCNO',
     title: 'Task',
-    width: 4,
-    isActive: true,
-  ),
-  FilterHeadItem(
-    key: '',
-    title: 'Issue',
-    width: 1,
-    isActive: true,
-  ),
-  FilterHeadItem(
-    key: '',
-    title: 'Company',
+    sort: 'Y',
     width: 3,
     isActive: true,
   ),
   FilterHeadItem(
-    key: 'module',
+    key: 'ISSUE_TYPE',
+    title: 'Issue',
+    sort: 'Y',
+    width: 1,
+    isActive: true,
+  ),
+  FilterHeadItem(
+    key: 'COMPANY_NAME',
+    title: 'Company',
+    sort: 'Y',
+    width: 2,
+    isActive: true,
+  ),
+  FilterHeadItem(
+    key: 'MODULE',
     title: 'Module',
-    width: 2,
+    sort: 'Y',
+    width: 1,
     isActive: true,
   ),
   FilterHeadItem(
-    key: '',
+    key: 'DEPARTMENT',
     title: 'Department',
-    width: 2,
+    sort: 'Y',
+    width: 1,
     isActive: true,
   ),
   FilterHeadItem(
-    key: '',
+    key: 'STATUS',
     title: 'Status',
-    width: 2,
+    sort: 'Y',
+    width: 1,
     isActive: true,
   ),
   FilterHeadItem(
-    key: '',
+    key: 'CREATE_DATE',
     title: 'Create Date',
-    width: 2,
+    sort: 'Y',
+    width: 1,
     isActive: true,
   ),
   FilterHeadItem(
-    key: '',
+    key: 'PRIORITY',
     title: 'Priority',
-    width: 2,
+    sort: 'Y',
+    width: 1,
     isActive: true,
   ),
   FilterHeadItem(
-    key: '',
+    key: 'CREATE_USER',
     title: 'Created By',
-    width: 2,
-    isActive: true,
-  ),
-  FilterHeadItem(
-    key: 'time_hr',
-    title: 'Hour',
+    sort: 'Y',
     width: 1,
     isActive: true,
   ),
 ];
+
+var code = {
+  'task': 'DOCNO',
+  'user': 'USER_CODE',
+  'client': 'CLIENT_ID',
+  'module': 'MODULE',
+  'dept': 'DEPARTMENT_CODE',
+  'status': 'STATUS',
+  'priority': 'PRIORITY',
+};

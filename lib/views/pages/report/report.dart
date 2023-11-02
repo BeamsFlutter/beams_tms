@@ -1,14 +1,18 @@
 import 'package:bams_tms/controller/global/globalValues.dart';
 import 'package:bams_tms/controller/services/apiController.dart';
 import 'package:bams_tms/views/components/filters/dated_filter.dart';
-import 'package:bams_tms/views/components/filters/filter_head.dart';
 import 'package:bams_tms/views/pages/users/usershome.dart';
+import 'package:bams_tms/views/pages/users/usershome.dart' as home;
 import 'package:flutter/material.dart';
 import 'package:flutter_bounce/flutter_bounce.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../../components/PopupLookup/filterPopup.dart';
 import '../../components/common/common.dart';
+import '../../components/filters/filter_head.dart';
+import '../../components/lookup/filterLookup.dart';
+import '../../components/lookup/lookup.dart';
 import '../../styles/colors.dart';
 
 class ReportScreen extends StatefulWidget {
@@ -22,6 +26,9 @@ class _ReportScreenState extends State<ReportScreen> {
   final scaffoldKey = GlobalKey<ScaffoldState>();
   ApiCall apiCall = ApiCall();
   final Global g = Global();
+
+  late Future<dynamic> futureForm;
+  var notificationList = [];
 
   var sideNavigation = "";
   String title = 'User Report';
@@ -39,16 +46,73 @@ class _ReportScreenState extends State<ReportScreen> {
   var blColorWise = false;
   var lstrViewKey = "";
 
-  var groupBy  = [
+  var lstrMenuHoverMode = "PROFILE";
+  var lstrPriorityList = [];
+  var lstrIssueTypeList = [];
+  var lstrTPrvDocno = "";
+  var lstrViewDocno = "";
+  var lstrTSubTaskOf = "";
+  var lstrTTaskDocno = "";
+  var lstrTTaskDoctype = "";
+  var lstrTMainCompanyCode = "";
+  var lstrTMainCompany = "";
+  var lstrTCompany = "";
+  var lstrTCompanyCode = "";
+  var lstrTCompanyId = "";
+  var lstrTaskList = [];
+  var lstrTaskListPageNo = 0;
+
+  var openTicket = 0;
+  var closedTicket = 0;
+  var droppedTicket = 0;
+  var overdueTicket = 0;
+  var holdTickets = 0;
+  var activeTickets = 0;
+
+  var fOpenTicket = 0;
+  var fClosedTicket = 0;
+  var fDroppedTicket = 0;
+  var fOverdueTicket = 0;
+  var fActiveTickets = 0;
+  var fHoldTickets = 0;
+
+  var moduleCount = [];
+  var priorityCount = [];
+  var issueCount = [];
+
+  var flStatus = "";
+  var flOverDueYn = "N";
+  var flSortColumn = "";
+  var flSortColumnName = "";
+  var flSortColumnDir = "";
+  var flPriorityList = [];
+  var flIssueTypeList = [];
+  var flCompanyList = [];
+  var flUserList = [];
+  var flAssignUserFrom = [];
+  var flAssignUserTo = [];
+  var flDepartment = [];
+  var flModuleList = [];
+
+  var flSelectedPriority = "";
+  var flSelectedIssue = "";
+  var flSelectedModule = "";
+  var flCreateDate = "";
+  var flDocno = "";
+
+  var txtSearch = TextEditingController();
+  var txtController = TextEditingController();
+
+  var groupBy = [
     {
-    "TITLE":"USER",
-    "KEY":"USER_CODE",
-    "PARA":"A.USER_CODE",
+      "TITLE": "USER",
+      "KEY": "USER_CODE",
+      "PARA": "A.USER_CODE",
     },
     {
-      "TITLE":"PRIORITY",
-      "KEY":"PRIORITY_DESCP",
-      "PARA":"B.PRIORITY",
+      "TITLE": "PRIORITY",
+      "KEY": "PRIORITY_DESCP",
+      "PARA": "B.PRIORITY",
     }
   ];
 
@@ -89,7 +153,7 @@ class _ReportScreenState extends State<ReportScreen> {
             Expanded(
               child: Row(
                 children: [
-                 // wLeftSideBar(),
+                  // wLeftSideBar(),
                   wCenterSection(),
                   blSideScreen ? gapWC(0) : wRightFilterSection(),
                 ],
@@ -274,7 +338,7 @@ class _ReportScreenState extends State<ReportScreen> {
                       gapWC(10),
                       Bounce(
                         onPressed: () {
-                          if(mounted){
+                          if (mounted) {
                             setState(() {
                               blColorWise = !blColorWise;
                             });
@@ -288,8 +352,10 @@ class _ReportScreenState extends State<ReportScreen> {
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                               Icon(blColorWise?
-                                Icons.radio_button_checked:Icons.radio_button_off,
+                              Icon(
+                                blColorWise
+                                    ? Icons.radio_button_checked
+                                    : Icons.radio_button_off,
                                 color: Colors.white,
                                 size: 12,
                               ),
@@ -302,7 +368,7 @@ class _ReportScreenState extends State<ReportScreen> {
                       gapWC(10),
                       Bounce(
                         onPressed: () {
-                           fnFilterClear();
+                          fnFilterClear();
                           // apiGetTask("");
                         },
                         duration: const Duration(milliseconds: 110),
@@ -357,120 +423,126 @@ class _ReportScreenState extends State<ReportScreen> {
               ),
             ),
             gapHC(10),
-            FilterHead(
+            Container(
+              margin: const EdgeInsets.only(bottom: 5),
+              padding: const EdgeInsets.all(5),
+              decoration: boxDecoration(Colors.white, 5),
+              child: Column(
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      for (var e in defaultHeadList)
+                        wRowHead(e.title, e.key, e.width, e.sort, e.isActive),
+                      /*wRowHead("Task", "DOCNO", 3, "Y"),
+                      wRowHead("Issue", "ISSUE_TYPE", 1, "Y"),
+                      wRowHead("Company", "COMPANY_NAME", 2, "Y"),
+                      wRowHead("Module", "MODULE", 1, "Y"),
+                      wRowHead("Department", "DEPARTMENT", 1, "Y"),
+                      wRowHead("Status", "STATUS", 1, "Y"),
+                      wRowHead("Create Date", "CREATE_DATE", 1, "Y"),
+                      //wRowHead("Deadline","DEADLINE",1,"Y"),
+                      wRowHead("Active User", "ACTIVE", 1, "Y"),
+                      //wRowHead("Assigned By","ASSIGNED_USER",1,"Y"),
+                      wRowHead("Created By", "CREATE_USER", 1, "Y"),*/
+                      Padding(
+                        padding: const EdgeInsets.only(left: 10),
+                        child: PopupMenuButton(
+                          position: PopupMenuPosition.under,
+                          offset: const Offset(5, 10),
+                          child: const Icon(
+                            Icons.checklist,
+                            color: Colors.deepOrange,
+                            size: 20,
+                          ),
+                          itemBuilder: (context) {
+                            return [
+                              for (var e in defaultHeadList)
+                                PopupMenuItem(
+                                  child: StatefulBuilder(
+                                    builder: (BuildContext context,
+                                        void Function(void Function())
+                                            updateState) {
+                                      return InkWell(
+                                        onTap: () {
+                                          setState(() {
+                                            updateState(() {
+                                              e.isActive = !e.isActive;
+                                            });
+                                          });
+                                        },
+                                        child: Container(
+                                          decoration: boxOutlineCustom(
+                                              Colors.white,
+                                              0,
+                                              Colors.grey.shade200),
+                                          child: Padding(
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 15,
+                                              vertical: 10,
+                                            ),
+                                            child: Row(
+                                              children: [
+                                                Container(
+                                                  width: 15,
+                                                  height: 15,
+                                                  decoration: boxOutlineCustom(
+                                                      e.isActive
+                                                          ? color2
+                                                          : Colors.white,
+                                                      5,
+                                                      e.isActive
+                                                          ? color2
+                                                          : Colors
+                                                              .grey.shade300),
+                                                  child: const Center(
+                                                    child: Icon(
+                                                      Icons.check,
+                                                      color: Colors.white,
+                                                      size: 12,
+                                                    ),
+                                                  ),
+                                                ),
+                                                gapWC(5),
+                                                tc(e.title, Colors.black, 14),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                ),
+                            ];
+                          },
+                        ),
+                      ),
+                    ],
+                  )
+                ],
+              ),
+            ),
+            /*FilterHead(
               headList: defaultHeadList,
               dataMap: {
                 'grouped': _groupingData,
               },
-            ),
+            ),*/
             gapHC(10),
-            Expanded(child: ListView.builder(
-                physics: const AlwaysScrollableScrollPhysics(),
-                itemCount: lResultList.where((e) => e["GROUP"] == 1).length,
-                itemBuilder: (context, index){
-                  var data = lResultList.where((e) => e["GROUP"] == 1).toList()[index];
-                  return wGroupHead(data);
-                }
-            ))
+            Expanded(
+                child: ListView.builder(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    itemCount: lResultList.where((e) => e["GROUP"] == 1).length,
+                    itemBuilder: (context, index) {
+                      var data = lResultList
+                          .where((e) => e["GROUP"] == 1)
+                          .toList()[index];
+                      return wGroupHead(data);
+                    }))
           ],
         ),
       ),
     );
-  }
-
-
-  Widget wGroupHead(data){
-    var subList = (data["PARENT_DATA"]??[]);
-    var title = (data["DATA"]??"");
-    var parentKey = (data["PARENT_KEY"]??"");
-    var orderNo = data["GROUP"];
-    var hour = fnConvertHoursToHMS(g.mfnDbl(data["TIME_HR"])).toString();
-    var count = (data["COUNT"]??"").toString();
-    var key  = "$title$orderNo$parentKey";
-    return Column(
-      children: [
-        GestureDetector(
-          onTap: (){
-            setState(() {
-              if(lVisibleList.contains(key)){
-                lVisibleList.remove(key);
-              }else{
-                lVisibleList.add(key);
-              }
-            });
-          },
-          child: MouseRegion(
-            onHover: (sts) {
-              if (mounted) {
-                setState(() {
-                  lstrViewKey = key;
-                });
-              }
-            },
-            child: Container(
-              padding:  const EdgeInsets.all(10),
-              margin: EdgeInsets.only(left: orderNo * 15.0,bottom: 2),
-              //_colorList[orderNo].withOpacity(0.1)
-              decoration:
-              orderNo ==1?boxDecoration(lstrViewKey ==key?yellowLight.withOpacity(0.5):  Colors.white, 5):
-              boxBaseDecoration(lstrViewKey ==key?yellowLight.withOpacity(0.5): orderNo >1?blColorWise?_colorList[orderNo].withOpacity(0.1): blueLight: Colors.white, 5),
-              child: Row(
-                children: [
-                  Flexible(
-                    flex: 8,
-                    child: Row(
-                      children: [
-                        lVisibleList.contains(key)? const Icon(Icons.arrow_drop_down_sharp,size: 18,): const Icon(Icons.arrow_right_rounded,size: 18,),
-                        gapWC(5),
-                        orderNo ==1?tc(title, Colors.black, 13):
-                        tcn(title, Colors.black, 13),
-                      ],
-                    ),
-                  ),
-                  Flexible(
-                      flex: 1,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        orderNo ==1?tc(count, Colors.black, 13):
-                        tcn(count, Colors.black, 13),
-                      ],
-                    )
-                  ),
-                  Flexible(
-                      flex: 1,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        orderNo ==1? tc(hour, Colors.black, 13):
-                        tcn(hour, Colors.black, 13),
-                      ],
-                    )
-                  ),
-
-
-                ],
-              ),
-            ),
-          ),
-        ),
-        // Padding(padding: EdgeInsets.only(left: orderNo * 15.0)
-        // ,child:   Divider(color: Colors.grey.shade500,height: 0.2,),),
-        lVisibleList.contains(key)?
-        Column(
-            children: wSubList(title,data,orderNo)
-        ):gapHC(0)
-      ],
-    );
-  }
-
-  List<Widget> wSubList(title,data,orderNo){
-    List<Widget> rtnList = [];
-    var subData = lResultList.where((e) => e["GROUP"] == orderNo+1 && e["PARENT_KEY"] == title).toList();
-    for(var e in subData){
-      rtnList.add(  wGroupHead(e));
-    }
-    return rtnList;
   }
 
   Widget wRightFilterSection() {
@@ -558,6 +630,126 @@ class _ReportScreenState extends State<ReportScreen> {
     );
   }
 
+  Widget wGroupHead(data) {
+    var subList = (data["PARENT_DATA"] ?? []);
+    var title = (data["DATA"] ?? "");
+    var parentKey = (data["M_KEY"] ?? "");
+    var orderNo = data["GROUP"];
+    var hour = fnConvertHoursToHMS(g.mfnDbl(data["TIME_HR"])).toString();
+    var count = (data["COUNT"] ?? "").toString();
+    var key = "$title$orderNo$parentKey";
+
+    return Column(
+      children: [
+        GestureDetector(
+          onTap: () {
+            setState(() {
+              if (lVisibleList.contains(key)) {
+                lVisibleList.remove(key);
+              } else {
+                lVisibleList.add(key);
+              }
+            });
+          },
+          child: MouseRegion(
+            onHover: (sts) {
+              if (mounted) {
+                setState(() {
+                  lstrViewKey = key;
+                });
+              }
+            },
+            child: Container(
+              padding: const EdgeInsets.all(10),
+              margin: EdgeInsets.only(left: orderNo * 15.0, bottom: 2),
+              //_colorList[orderNo].withOpacity(0.1)
+              decoration: orderNo == 1
+                  ? boxDecoration(
+                      lstrViewKey == key
+                          ? yellowLight.withOpacity(0.5)
+                          : Colors.white,
+                      5)
+                  : boxBaseDecoration(
+                      lstrViewKey == key
+                          ? yellowLight.withOpacity(0.5)
+                          : orderNo > 1
+                              ? blColorWise
+                                  ? _colorList[orderNo].withOpacity(0.1)
+                                  : blueLight
+                              : Colors.white,
+                      5),
+              child: Row(
+                children: [
+                  Flexible(
+                    flex: 8,
+                    child: Row(
+                      children: [
+                        lVisibleList.contains(key)
+                            ? const Icon(
+                                Icons.arrow_drop_down_sharp,
+                                size: 18,
+                              )
+                            : const Icon(
+                                Icons.arrow_right_rounded,
+                                size: 18,
+                              ),
+                        gapWC(5),
+                        orderNo == 1
+                            ? tc(title, Colors.black, 13)
+                            : tcn(title, Colors.black, 13),
+                      ],
+                    ),
+                  ),
+                  Flexible(
+                      flex: 1,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          orderNo == 1
+                              ? tc(count, Colors.black, 13)
+                              : tcn(count, Colors.black, 13),
+                        ],
+                      )),
+                  Flexible(
+                      flex: 1,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          orderNo == 1
+                              ? tc(hour, Colors.black, 13)
+                              : tcn(hour, Colors.black, 13),
+                        ],
+                      )),
+                ],
+              ),
+            ),
+          ),
+        ),
+        // Padding(padding: EdgeInsets.only(left: orderNo * 15.0)
+        // ,child:   Divider(color: Colors.grey.shade500,height: 0.2,),),
+        lVisibleList.contains(key)
+            ? Column(children: wSubList(title, data, orderNo))
+            : gapHC(0)
+      ],
+    );
+  }
+
+  List<Widget> wSubList(title, data, orderNo) {
+    List<Widget> rtnList = [];
+
+    var mainParent = data["M_KEY"];
+
+    rtnList.add(Container());
+    var subData = lResultList
+        .where(
+            (e) => e["GROUP"] == orderNo + 1 && e["PARENT_M_KEY"] == mainParent)
+        .toList();
+    for (var e in subData) {
+      rtnList.add(wGroupHead(e));
+    }
+    return rtnList;
+  }
+
   Widget wMenuCard(icon, text, mode) {
     return Bounce(
       duration: const Duration(milliseconds: 110),
@@ -601,6 +793,477 @@ class _ReportScreenState extends State<ReportScreen> {
     );
   }
 
+  Widget wRowHead(title, column, flex, sortYn, active) {
+    if (active) {
+      return Flexible(
+          flex: flex,
+          child: MouseRegion(
+              onHover: (hvr) {
+                if (mounted) {
+                  setState(() {
+                    if (sortYn == "Y") {
+                      flSortColumn = column;
+                    }
+                  });
+                }
+              },
+              child: GestureDetector(
+                onTap: () {
+                  if (flSortColumnDir == "ASC") {
+                    fnSort(column, "DESC");
+                  } else {
+                    fnSort(column, "ASC");
+                  }
+                },
+                child: Container(
+                  padding: const EdgeInsets.all(5),
+                  decoration: flSortColumn == column
+                      ? boxBaseDecoration(yellowLight.withOpacity(0.5), 2)
+                      : boxBaseDecoration(Colors.transparent, 0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Expanded(
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: tc(title, color3, 12),
+                                ),
+                                gapWC(5),
+                                (column == "PRIORITY" &&
+                                            flPriorityList.isNotEmpty) ||
+                                        (column == "ISSUE_TYPE" &&
+                                            flIssueTypeList.isNotEmpty) ||
+                                        (column == "DEPARTMENT" &&
+                                            flDepartment.isNotEmpty) ||
+                                        (column == "DOCNO" &&
+                                            flDocno.isNotEmpty) ||
+                                        (column == "COMPANY_NAME" &&
+                                            flCompanyList.isNotEmpty) ||
+                                        (column == "MODULE" &&
+                                            flModuleList.isNotEmpty) ||
+                                        (column == "CREATE_USER" &&
+                                            flUserList.isNotEmpty) ||
+                                        (column == "CREATE_DATE" &&
+                                            flCreateDate.isNotEmpty)
+                                    ? Container(
+                                        padding: const EdgeInsets.symmetric(
+                                            vertical: 1, horizontal: 5),
+                                        decoration:
+                                            boxBaseDecoration(color2, 5),
+                                        child: tcn(
+                                            (column == "PRIORITY"
+                                                    ? flPriorityList.length
+                                                    : column == "ISSUE_TYPE"
+                                                        ? flIssueTypeList.length
+                                                        : column ==
+                                                                "COMPANY_NAME"
+                                                            ? flCompanyList
+                                                                .length
+                                                            : column ==
+                                                                    "CREATE_USER"
+                                                                ? flUserList
+                                                                    .length
+                                                                : column ==
+                                                                        "MODULE"
+                                                                    ? flModuleList
+                                                                        .length
+                                                                    : column ==
+                                                                            "DEPARTMENT"
+                                                                        ? flDepartment
+                                                                            .length
+                                                                        : '1')
+                                                .toString(),
+                                            Colors.white,
+                                            10),
+                                      )
+                                    : gapWC(0),
+                              ],
+                            ),
+                          ),
+                          gapWC(5),
+                          flSortColumn == column
+                              ? Row(
+                                  children: [
+                                    flSortColumnDir == "DESC"
+                                        ? const Icon(
+                                            Icons.arrow_downward_rounded,
+                                            size: 10)
+                                        : const Icon(Icons.arrow_upward_sharp,
+                                            size: 10),
+                                    gapWC(2),
+
+                                    PopupMenuButton<home.Menu>(
+                                      position: PopupMenuPosition.under,
+                                      tooltip: "",
+                                      onSelected: (home.Menu item) {
+                                        setState(() {});
+                                      },
+                                      shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(10)),
+                                      itemBuilder: (BuildContext context) =>
+                                          <PopupMenuEntry<home.Menu>>[
+                                        PopupMenuItem<home.Menu>(
+                                          value: home.Menu.itemOne,
+                                          padding: const EdgeInsets.symmetric(
+                                              vertical: 0, horizontal: 0),
+                                          child: wFilterPopup(column),
+                                        ),
+                                      ],
+                                      child: const Icon(Icons.filter_list_alt,
+                                          size: 12),
+                                    ),
+                                    // GestureDetector(
+                                    //     onTap: (){
+                                    //       fnSort(column,"ASC");
+                                    //     },
+                                    //     child: const Icon(Icons.arrow_upward_sharp,size:10))
+                                  ],
+                                )
+                              : gapHC(0),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              )));
+    } else {
+      return gapWC(0);
+    }
+  }
+
+  Widget wFilterPopup(mode) {
+    if (mounted) {
+      setState(() {
+        flSelectedIssue = "";
+        flSelectedPriority = "";
+        flSelectedModule = "";
+      });
+    }
+    if (mode == "PRIORITY") {
+      return FilterPopup(
+        lstrColumnList: [],
+        lstrData: lstrPriorityList,
+        callback: (data) {
+          if (mounted) {
+            setState(() {
+              flPriorityList = data;
+            });
+            // apiGetTask("");
+            _apiDataFetch();
+          }
+        },
+        mainKey: "CODE",
+        showKey: "DESCP",
+        lstrOldData: flPriorityList,
+      );
+    } else if (mode == "ISSUE_TYPE") {
+      return FilterPopup(
+        lstrColumnList: [],
+        lstrData: lstrIssueTypeList,
+        callback: (data) {
+          if (mounted) {
+            setState(() {
+              flIssueTypeList = data;
+            });
+            // apiGetTask("");
+            _apiDataFetch();
+          }
+        },
+        mainKey: "CODE",
+        showKey: "DESCP",
+        lstrOldData: flIssueTypeList,
+      );
+    } else if (mode == "DOCNO") {
+      final List<Map<String, dynamic>> lookup_Columns = [
+        {'Column': 'DOCNO', 'Display': '#'},
+        {'Column': 'TASK_HEADER', 'Display': 'Task Name'},
+        {'Column': 'TASK_DETAIL', 'Display': 'Task Details'},
+      ];
+      final List<Map<String, dynamic>> lookup_Filldata = [];
+      var lstrFilter = [
+        {
+          'Column': "DOCNO",
+          'Operator': '<>',
+          'Value': lstrTTaskDocno,
+          'JoinType': 'AND'
+        },
+      ];
+      return Lookup(
+        txtControl: txtController,
+        oldValue: "",
+        lstrTable: 'TASK',
+        title: 'Task List',
+        lstrColumnList: lookup_Columns,
+        lstrFilldata: lookup_Filldata,
+        lstrPage: '0',
+        lstrPageSize: '100',
+        lstrFilter: lstrFilter,
+        keyColumn: 'DOCNO',
+        mode: "S",
+        layoutName: "B",
+        callback: (data) {
+          if (mounted) {
+            setState(() {
+              if (g.fnValCheck(data)) {
+                flDocno = data["DOCNO"];
+              }
+            });
+            // apiGetTask("");
+            _apiDataFetch();
+          }
+        },
+        searchYn: 'Y',
+      );
+    } else if (mode == "COMPANY_NAME") {
+      final List<Map<String, dynamic>> lookup_Columns = [
+        {'Column': 'CLIENT_ID', 'Display': '#'},
+        {'Column': 'NAME', 'Display': 'Company'},
+      ];
+      final List<Map<String, dynamic>> lookup_Filldata = [];
+      var lstrFilter = [];
+
+      return FilterLookup(
+        txtControl: txtController,
+        oldValue: "",
+        lstrTable: 'CLIENT_DETAIL',
+        title: 'Company',
+        lstrOldData: flCompanyList,
+        lstrColumnList: lookup_Columns,
+        lstrFilldata: lookup_Filldata,
+        lstrPage: '0',
+        lstrPageSize: '100',
+        lstrFilter: lstrFilter,
+        keyColumn: 'CLIENT_ID',
+        mode: "S",
+        layoutName: "B",
+        callback: (data) {
+          if (mounted) {
+            setState(() {
+              flCompanyList = data;
+            });
+            // apiGetTask("");
+            _apiDataFetch();
+          }
+        },
+        searchYn: 'Y',
+      );
+    } else if (mode == "CREATE_USER") {
+      // if(g.wstrUserRole != "ADMIN"){
+      //   return Container();
+      // }
+      final List<Map<String, dynamic>> lookup_Columns = [
+        {'Column': 'USER_CD', 'Display': 'User'},
+      ];
+      final List<Map<String, dynamic>> lookup_Filldata = [];
+      var lstrFilter = [];
+
+      return FilterLookup(
+        txtControl: txtController,
+        oldValue: "",
+        lstrTable: 'USER_MASTER',
+        title: 'Create User',
+        lstrOldData: flUserList,
+        lstrColumnList: lookup_Columns,
+        lstrFilldata: lookup_Filldata,
+        lstrPage: '0',
+        lstrPageSize: '100',
+        lstrFilter: lstrFilter,
+        keyColumn: 'USER_CD',
+        mode: "S",
+        layoutName: "B",
+        callback: (data) {
+          if (mounted) {
+            setState(() {
+              flUserList = data;
+            });
+            // apiGetTask("");
+            _apiDataFetch();
+          }
+        },
+        searchYn: 'Y',
+      );
+    } else if (mode == "MODULE") {
+      final List<Map<String, dynamic>> lookup_Columns = [
+        {'Column': 'CODE', 'Display': 'User'},
+      ];
+      final List<Map<String, dynamic>> lookup_Filldata = [];
+      var lstrFilter = [];
+
+      return FilterLookup(
+        txtControl: txtController,
+        oldValue: "",
+        lstrTable: 'MODULE_MAST',
+        title: 'Module',
+        lstrOldData: flModuleList,
+        lstrColumnList: lookup_Columns,
+        lstrFilldata: lookup_Filldata,
+        lstrPage: '0',
+        lstrPageSize: '100',
+        lstrFilter: lstrFilter,
+        keyColumn: 'CODE',
+        mode: "S",
+        layoutName: "B",
+        callback: (data) {
+          if (mounted) {
+            setState(() {
+              flModuleList = data;
+            });
+            // apiGetTask("");
+            _apiDataFetch();
+          }
+        },
+        searchYn: 'Y',
+      );
+    } else if (mode == "ASSIGN_USER") {
+      final List<Map<String, dynamic>> lookup_Columns = [
+        {'Column': 'USER_CD', 'Display': 'User'},
+      ];
+      final List<Map<String, dynamic>> lookup_Filldata = [];
+      var lstrFilter = [];
+
+      return FilterLookup(
+        txtControl: txtController,
+        oldValue: "",
+        lstrTable: 'USER_MASTER',
+        title: 'Assign Users',
+        lstrOldData: flAssignUserFrom,
+        lstrColumnList: lookup_Columns,
+        lstrFilldata: lookup_Filldata,
+        lstrPage: '0',
+        lstrPageSize: '100',
+        lstrFilter: lstrFilter,
+        keyColumn: 'USER_CD',
+        mode: "S",
+        layoutName: "B",
+        callback: (data) {
+          if (mounted) {
+            if (mounted) {
+              setState(() {
+                flAssignUserFrom = data;
+              });
+              Navigator.pop(context);
+              // apiGetTask("");
+              _apiDataFetch();
+            }
+          }
+        },
+        searchYn: 'Y',
+      );
+    } else if (mode == "ASSIGN_TO") {
+      final List<Map<String, dynamic>> lookup_Columns = [
+        {'Column': 'USER_CD', 'Display': 'User'},
+      ];
+      final List<Map<String, dynamic>> lookup_Filldata = [];
+      var lstrFilter = [];
+
+      return FilterLookup(
+        txtControl: txtController,
+        oldValue: "",
+        lstrTable: 'USER_MASTER',
+        title: 'Assign Users',
+        lstrOldData: flAssignUserTo,
+        lstrColumnList: lookup_Columns,
+        lstrFilldata: lookup_Filldata,
+        lstrPage: '0',
+        lstrPageSize: '100',
+        lstrFilter: lstrFilter,
+        keyColumn: 'USER_CD',
+        mode: "S",
+        layoutName: "B",
+        callback: (data) {
+          if (mounted) {
+            if (mounted) {
+              setState(() {
+                flAssignUserTo = data;
+              });
+              Navigator.pop(context);
+              // apiGetTask("");
+              _apiDataFetch();
+            }
+          }
+        },
+        searchYn: 'Y',
+      );
+    } else if (mode == "DEPARTMENT") {
+      final List<Map<String, dynamic>> lookup_Columns = [
+        {'Column': 'CODE', 'Display': 'User'},
+        {'Column': 'DESCP', 'Display': 'Descp'},
+      ];
+      final List<Map<String, dynamic>> lookup_Filldata = [];
+      var lstrFilter = [];
+
+      return FilterLookup(
+        txtControl: txtController,
+        oldValue: "",
+        lstrTable: 'DEPARTMENT_MAST',
+        title: 'Department',
+        lstrOldData: flDepartment,
+        lstrColumnList: lookup_Columns,
+        lstrFilldata: lookup_Filldata,
+        lstrPage: '0',
+        lstrPageSize: '100',
+        lstrFilter: lstrFilter,
+        keyColumn: 'CODE',
+        mode: "S",
+        layoutName: "B",
+        callback: (data) {
+          if (mounted) {
+            if (mounted) {
+              setState(() {
+                flDepartment = data;
+              });
+              // apiGetTask("");
+              _apiDataFetch();
+            }
+          }
+        },
+        searchYn: 'Y',
+      );
+    } else if (mode == "CREATE_DATE") {
+      return Container(
+        width: 300,
+        padding: const EdgeInsets.all(10),
+        child: Column(
+          children: [
+            GestureDetector(
+                onTap: () {
+                  Navigator.pop(context);
+                  _selectFilterDate(context);
+                },
+                child: tcn(flCreateDate.isEmpty ? "Choose Date" : flCreateDate,
+                    bgColorDark, 12)),
+            gapHC(20),
+            GestureDetector(
+              onTap: () {
+                if (mounted) {
+                  setState(() {
+                    flCreateDate = "";
+                  });
+                  Navigator.pop(context);
+                  // apiGetTask("");
+                  _apiDataFetch();
+                }
+              },
+              child: Container(
+                padding: EdgeInsets.symmetric(vertical: 5, horizontal: 50),
+                decoration:
+                    boxOutlineCustom1(Colors.white, 30, Colors.black, 0.5),
+                child: tcn1('Clear', Colors.black, 10),
+              ),
+            )
+          ],
+        ),
+      );
+    } else {
+      return Container();
+    }
+  }
+
   setDateRange(DateTime from, DateTime to) async {
     await Future.delayed(const Duration(milliseconds: 300));
     setState(() {
@@ -612,6 +1275,18 @@ class _ReportScreenState extends State<ReportScreen> {
 
   fnPageLoad() {
     _selectedGroupByItems = [];
+    apiGetTaskMasters();
+  }
+
+  fnSort(column, arrow) {
+    if (mounted) {
+      setState(() {
+        flSortColumnName = column;
+        flSortColumnDir = arrow;
+      });
+    }
+    // apiGetTask("");
+    _apiDataFetch();
   }
 
   _manageGrouping() {
@@ -677,6 +1352,7 @@ class _ReportScreenState extends State<ReportScreen> {
       ),
     );
   }
+
   _status(item) {
     return Bounce(
       onPressed: () {
@@ -717,7 +1393,7 @@ class _ReportScreenState extends State<ReportScreen> {
               ),
             if (_selectedStatus.contains(item)) gapWC(10),
             Text(
-              item["TITLE"]?? '',
+              item["TITLE"] ?? '',
               style: GoogleFonts.poppins(
                 textStyle: const TextStyle(
                   color: Colors.black,
@@ -763,30 +1439,73 @@ class _ReportScreenState extends State<ReportScreen> {
   }
 
   _apiDataFetch() async {
-
-
     var col = [];
     var fil = [];
 
     //TODO FILTER
 
-    for(var e in _selectedStatus){
-      if((e["KEY"]??"") == "P"){
+    for (var e in _selectedStatus) {
+      if ((e["KEY"] ?? "") == "P") {
         fil.add({
-          "COL_KEY":"STATUS",
+          "COL_KEY": "STATUS",
           "COL_VAL": "A",
         });
         fil.add({
-          "COL_KEY":"STATUS",
+          "COL_KEY": "STATUS",
           "COL_VAL": "H",
         });
       }
       fil.add({
-        "COL_KEY":"STATUS",
-        "COL_VAL": (e["KEY"]??""),
+        "COL_KEY": "STATUS",
+        "COL_VAL": (e["KEY"] ?? ""),
       });
     }
 
+    //user
+
+    for (var e in flUserList) {
+      fil.add({
+        "COL_KEY": "USER_CODE",
+        "COL_VAL": (e ?? ""),
+      });
+    }
+
+    //task
+
+    if (flDocno.trim().isNotEmpty) {
+      fil.add({
+        "COL_KEY": "DOCNO",
+        "COL_VAL": flDocno,
+      });
+    }
+
+    for (var e in flCompanyList) {
+      fil.add({
+        "COL_KEY": "CLIENT_ID",
+        "COL_VAL": (e ?? ""),
+      });
+    }
+
+    for (var e in flModuleList) {
+      fil.add({
+        "COL_KEY": "MODULE",
+        "COL_VAL": (e ?? ""),
+      });
+    }
+
+    for (var e in flDepartment) {
+      fil.add({
+        "COL_KEY": "DEPARTMENT_CODE",
+        "COL_VAL": (e ?? ""),
+      });
+    }
+
+    for (var e in flPriorityList) {
+      fil.add({
+        "COL_KEY": "PRIORITY",
+        "COL_VAL": (e ?? ""),
+      });
+    }
 
     for (var se in _selectedGroupByItems) {
       for (var seKey in se['REQUEST_KEY']) {
@@ -794,25 +1513,18 @@ class _ReportScreenState extends State<ReportScreen> {
       }
     }
     dynamic response = await apiCall.apiTaskReport(
-        col,
-        setDate(2, fromDate),
-        setDate(2, toDate),
-        fil,
-        g.wstrUserCd,
-        'N');
-    if(mounted){
+        col, setDate(2, fromDate), setDate(2, toDate), fil, g.wstrUserCd, 'N');
+    if (mounted) {
       setState(() {
-        try{
-          _groupByData = response["HEAD"]??[];
-        }catch (e){
-          _groupByData =[];
+        try {
+          _groupByData = response["HEAD"] ?? [];
+        } catch (e) {
+          _groupByData = [];
           dprint(e);
         }
-
       });
     }
     dprint('RESPONSE^^^^ $response');
-
 
     var data = _groupByData;
     lResultList = [];
@@ -820,13 +1532,31 @@ class _ReportScreenState extends State<ReportScreen> {
     //1. selected group list
     var orderNo = 1;
     var parentKey = "";
+    var parentMKey = "";
+    var mainParent = "";
     var parentData = [];
     for (var e in _selectedGroupByItems) {
       var responseKey = (e["RETURN_KEY"] ?? "").toString();
       for (var de in data) {
+        mainParent = "";
+        parentMKey = "";
+        parentMKey = "";
+        var mainNo = 0;
+        for (var main in _selectedGroupByItems) {
+          if ((orderNo - 1) >= mainNo) {
+            mainParent = mainParent + (de[main["RETURN_KEY"]] ?? "").toString();
+          }
+          if ((orderNo - 1) > mainNo) {
+            parentMKey = parentMKey + (de[main["RETURN_KEY"]] ?? "").toString();
+          }
+          mainNo = mainNo + 1;
+        }
+
         if (lResultList
             // .where((re) => re["DATA"] == de[responseKey])
-            .where((re) => re['DATA'] == de[responseKey] && (re['PARENT_KEY']??"") == (de[parentKey]??""))
+            .where((re) =>
+                re['DATA'] == de[responseKey] &&
+                (re['M_KEY'] ?? "") == mainParent)
             .toList()
             .isEmpty) {
           //2.ADD TO RESULT DATA
@@ -834,9 +1564,10 @@ class _ReportScreenState extends State<ReportScreen> {
           var hour = 0.0;
           var dataSorList = [];
           if (orderNo == 1) {
-            dataSorList = data.where((re) => re[responseKey] == de[responseKey]).toList();
+            dataSorList =
+                data.where((re) => re[responseKey] == de[responseKey]).toList();
 
-            for(var f in dataSorList){
+            for (var f in dataSorList) {
               count += int.parse(f["COUNTS"].toString());
               hour += double.parse(f["TIME_HR"].toString());
             }
@@ -844,34 +1575,44 @@ class _ReportScreenState extends State<ReportScreen> {
             setState(() {
               lResultList.add({
                 "GROUP": orderNo,
+                "PARENT_M_KEY": parentMKey,
+                "M_KEY": mainParent,
                 "KEY": responseKey,
                 "DATA": (de[responseKey] ?? "").toString(),
+                "PARENT": (parentKey).toString(),
                 "PARENT_KEY": (de[parentKey] ?? "").toString(),
                 "PARENT_DATA": dataSorList,
                 "TIME_HR": hour,
                 "COUNT": count,
               });
             });
-          }else{
-
-            var lst = lResultList.where((re) => (re['DATA']??"") == (de[parentKey]??"")).toList();
-            if(lst.isNotEmpty){
-              parentData =lst[0]["PARENT_DATA"];
-              dataSorList = parentData.where((re) => re[responseKey] == de[responseKey]).toList();
+          } else {
+            var lst = lResultList
+                .where((re) =>
+                    (re['DATA'] ?? "") == (de[parentKey] ?? "") &&
+                    (re['M_KEY'] ?? "") == parentMKey)
+                .toList();
+            if (lst.isNotEmpty) {
+              parentData = lst[0]["PARENT_DATA"];
+              dataSorList = parentData
+                  .where((re) => re[responseKey] == de[responseKey])
+                  .toList();
             }
 
-
-            for(var f in dataSorList){
+            for (var f in dataSorList) {
               count += int.parse(f["COUNTS"].toString());
               hour += double.parse(f["TIME_HR"].toString());
             }
 
-            if(parentData.where((pe) => pe == de).toList().isNotEmpty){
+            if (parentData.where((pe) => pe == de).toList().isNotEmpty) {
               setState(() {
                 lResultList.add({
                   "GROUP": orderNo,
+                  "PARENT_M_KEY": parentMKey,
+                  "M_KEY": mainParent,
                   "KEY": responseKey,
                   "DATA": (de[responseKey] ?? "").toString(),
+                  "PARENT": (parentKey).toString(),
                   "PARENT_KEY": (de[parentKey] ?? "").toString(),
                   "PARENT_DATA": dataSorList,
                   "TIME_HR": hour,
@@ -880,7 +1621,6 @@ class _ReportScreenState extends State<ReportScreen> {
               });
             }
           }
-
         }
       }
       parentKey = responseKey;
@@ -901,18 +1641,321 @@ class _ReportScreenState extends State<ReportScreen> {
     double remainingMinutes = (remainingHours * 60) - minutes;
     int seconds = (remainingMinutes * 60).toInt();
     // Print the result in HH:MM:SS format
-    print('$fullHours:$minutes:$seconds');
+    // print('$fullHours:$minutes:$seconds');
 
-    return  '$fullHours:$minutes:$seconds';
+    return '$fullHours:$minutes:$seconds';
   }
 
-  fnFilterClear(){
-    if(mounted){
+  fnClearFilters() {
+    if (mounted) {
+      setState(() {
+        flStatus = "";
+        flOverDueYn = "N";
+        flSortColumn = "";
+        flSortColumnName = "";
+        flSortColumnDir = "";
+        flPriorityList = [];
+        flIssueTypeList = [];
+        flCompanyList = [];
+        flUserList = [];
+        flAssignUserFrom = [];
+        flAssignUserTo = [];
+        flDepartment = [];
+        flModuleList = [];
+        flSelectedPriority = "";
+        flSelectedIssue = "";
+        flSelectedModule = "";
+        flCreateDate = "";
+        flDocno = "";
+      });
+    }
+  }
+
+  fnFilterClear() {
+    fnClearFilters();
+    if (mounted) {
       setState(() {
         _selectedStatus = [];
         _selectedGroupByItems = [];
       });
       _apiDataFetch();
+    }
+  }
+
+  Future<void> _selectFilterDate(BuildContext context) async {
+    final DateTime? pickedDate = await showDatePicker(
+        context: context,
+        initialDate: DateTime.now(),
+        firstDate: DateTime(2020),
+        lastDate: DateTime(2100));
+    if (pickedDate != null) {
+      var filDate = setDate(2, pickedDate);
+      if (mounted) {
+        setState(() {
+          flCreateDate = filDate;
+        });
+        apiGetTask("F");
+      }
+    }
+  }
+
+  apiGetTaskMasters() {
+    futureForm = apiCall.apiGetTaskMasters();
+    futureForm.then((value) => apiGetTaskMastersRes(value));
+  }
+
+  apiGetTaskMastersRes(value) {
+    if (mounted) {
+      setState(() {
+        if (g.fnValCheck(value)) {
+          lstrPriorityList = value["PRIORITY"] ?? [];
+          lstrIssueTypeList = value["ISSUE_TYPE"] ?? [];
+        }
+      });
+    }
+  }
+
+  apiGetTask(mode) {
+    if (mounted) {
+      setState(() {
+        lstrViewDocno = "";
+        if (mode != "P") {
+          lstrTaskList = [];
+          lstrTaskListPageNo = 0;
+        }
+        // lstrTaskList =[];
+      });
+    }
+
+    var sortCol = flSortColumn == "" ? "" : flSortColumnName,
+        sortDir = flSortColumn == "" ? "" : flSortColumnDir,
+        search = "";
+    var client = [],
+        task = [],
+        issue = [],
+        clientType = [],
+        status = [],
+        userList = [],
+        priorityList = [],
+        moduleList = [],
+        assignFrom = [],
+        assignTo = [],
+        department = [];
+    //userList.add({'COL_VAL':g.wstrUserCd});
+
+    userList = [];
+    if (flUserList.isNotEmpty) {
+      for (var e in flUserList) {
+        userList.add({'COL_VAL': e});
+      }
+    }
+    if (flStatus.isNotEmpty) {
+      if (flStatus == "P") {
+        status.add({'COL_VAL': flStatus});
+        status.add({'COL_VAL': "A"});
+        status.add({'COL_VAL': "H"});
+      } else {
+        status.add({'COL_VAL': flStatus});
+      }
+    }
+    if (flSelectedPriority.isEmpty) {
+      if (flPriorityList.isNotEmpty) {
+        for (var e in flPriorityList) {
+          priorityList.add({'COL_VAL': e});
+        }
+      }
+    } else {
+      priorityList.add({'COL_VAL': flSelectedPriority});
+    }
+    if (flSelectedIssue.isEmpty) {
+      if (flIssueTypeList.isNotEmpty) {
+        for (var e in flIssueTypeList) {
+          issue.add({'COL_VAL': e});
+        }
+      }
+    } else {
+      issue.add({'COL_VAL': flSelectedIssue});
+    }
+
+    if (flCompanyList.isNotEmpty) {
+      for (var e in flCompanyList) {
+        client.add({'COL_VAL': e});
+      }
+    }
+    if (flAssignUserFrom.isNotEmpty) {
+      for (var e in flAssignUserFrom) {
+        assignFrom.add({'COL_VAL': e});
+      }
+    }
+
+    if (flAssignUserTo.isNotEmpty) {
+      for (var e in flAssignUserTo) {
+        assignTo.add({'COL_VAL': e});
+      }
+    }
+
+    if (flDepartment.isNotEmpty) {
+      for (var e in flDepartment) {
+        department.add({'COL_VAL': e});
+      }
+    }
+
+    if (flSelectedModule.isEmpty) {
+      if (flModuleList.isNotEmpty) {
+        for (var e in flModuleList) {
+          moduleList.add({'COL_VAL': e});
+        }
+      }
+    } else {
+      moduleList.add({'COL_VAL': flSelectedModule});
+    }
+
+    var profileYn = "N";
+    if (lstrMenuHoverMode == "PROFILE") {
+      profileYn = "Y";
+    }
+
+    var from = "";
+    var to = "";
+
+    from = flCreateDate;
+    to = flCreateDate;
+
+    futureForm = apiCall.apiGetTask(
+        flDocno.isEmpty ? null : flDocno,
+        flDocno.isEmpty ? null : "TASK",
+        from.isEmpty ? null : from,
+        to.isEmpty ? null : to,
+        g.wstrMainClientId,
+        "",
+        lstrTaskListPageNo,
+        sortCol,
+        sortDir,
+        txtSearch.text,
+        client,
+        task,
+        issue,
+        clientType,
+        status,
+        userList,
+        priorityList,
+        flOverDueYn,
+        moduleList,
+        profileYn,
+        assignFrom,
+        assignTo,
+        department);
+    futureForm.then((value) => apiGetTaskRes(value, mode));
+  }
+
+  apiGetTaskRes(value, mode) {
+    if (mounted) {
+      setState(() {
+        //lstrTaskList =[];
+        openTicket = 0;
+        closedTicket = 0;
+        droppedTicket = 0;
+        overdueTicket = 0;
+        holdTickets = 0;
+        activeTickets = 0;
+
+        fOpenTicket = 0;
+        fClosedTicket = 0;
+        fDroppedTicket = 0;
+        fOverdueTicket = 0;
+        fActiveTickets = 0;
+        fHoldTickets = 0;
+
+        moduleCount = [];
+        priorityCount = [];
+        issueCount = [];
+
+        if (g.fnValCheck(value)) {
+          if (mode == "P") {
+            lstrTaskList += value["TASKS"] ?? [];
+          } else {
+            lstrTaskList = value["TASKS"] ?? [];
+          }
+
+          var taskCount = [];
+          var taskCountFilter = [];
+          taskCount = value["TASK_COUNT"] ?? [];
+          taskCountFilter = value["TASK_COUNT_FILTER"] ?? [];
+          if (g.fnValCheck(taskCount)) {
+            var active = 0;
+            var hold = 0;
+            for (var e in taskCount) {
+              if (e["STATUS"] == "P") {
+                openTicket = e["COUNT"] ?? 0;
+              } else if (e["STATUS"] == "C") {
+                closedTicket = e["COUNT"] ?? 0;
+              } else if (e["STATUS"] == "D") {
+                droppedTicket = e["COUNT"] ?? 0;
+              } else if (e["STATUS"] == "A") {
+                activeTickets = (e["COUNT"] ?? 0);
+              } else if (e["STATUS"] == "H") {
+                holdTickets = (e["COUNT"] ?? 0);
+              }
+            }
+          }
+          if (g.fnValCheck(taskCountFilter)) {
+            var active = 0;
+            var hold = 0;
+            for (var e in taskCountFilter) {
+              if (e["STATUS"] == "P") {
+                fOpenTicket = e["COUNT"] ?? 0;
+              } else if (e["STATUS"] == "C") {
+                fClosedTicket = e["COUNT"] ?? 0;
+              } else if (e["STATUS"] == "D") {
+                fDroppedTicket = e["COUNT"] ?? 0;
+              } else if (e["STATUS"] == "A") {
+                fActiveTickets = (e["COUNT"] ?? 0);
+              } else if (e["STATUS"] == "H") {
+                fHoldTickets = (e["COUNT"] ?? 0);
+              }
+            }
+          }
+          //OverDue
+          var overDueCount = [];
+          overDueCount = value["OVERDUE_COUNT"] ?? [];
+          if (g.fnValCheck(overDueCount)) {
+            overdueTicket = overDueCount[0]["COUNT"] ?? 0;
+          }
+          //MOduleCount
+          moduleCount = value["MODULE_COUNT"] ?? [];
+          if (g.fnValCheck(moduleCount)) {
+            moduleCount = moduleCount
+              ..sort((a, b) => b['COUNT'].compareTo(a['COUNT']));
+          }
+          priorityCount = value["PRIORITY_COUNT"] ?? [];
+          if (g.fnValCheck(priorityCount)) {
+            priorityCount = priorityCount
+              ..sort((a, b) => b['COUNT'].compareTo(a['COUNT']));
+          }
+          issueCount = value["ISSUE_COUNT"] ?? [];
+          if (g.fnValCheck(issueCount)) {
+            issueCount = issueCount
+              ..sort((a, b) => b['COUNT'].compareTo(a['COUNT']));
+          }
+        }
+      });
+    }
+    apiNotification();
+  }
+
+  apiNotification() {
+    futureForm = apiCall.apiAllNotification(1);
+    futureForm.then((value) => apiNotificationRes(value));
+  }
+
+  apiNotificationRes(value) {
+    if (mounted) {
+      setState(() {
+        notificationList = [];
+        if (g.fnValCheck(value)) {
+          notificationList = value;
+        }
+      });
     }
   }
 }
@@ -936,7 +1979,6 @@ List _colorList = [
 Map _groupingData = {};
 
 List _groupByItems = [
-
   {
     'TITLE': 'TASKNO',
     'RETURN_KEY': 'TASKNO',
@@ -1013,7 +2055,6 @@ List _groupByItems = [
       },
     ],
   },
-
   {
     'TITLE': 'MODULE',
     'RETURN_KEY': 'MODULE',
@@ -1052,7 +2093,6 @@ List _groupByItems = [
       },
     ],
   },
-
   {
     'TITLE': 'STATUS',
     'RETURN_KEY': 'STATUS_DESCP',
@@ -1075,10 +2115,10 @@ List _selectedStatus = [];
 List _groupByData = [];
 
 List _statusData = [
-  {"TITLE":"OPEN","KEY":"P"},
-  {"TITLE":"STARTED","KEY":"S"},
-  {"TITLE":"HOLD","KEY":"H"},
-  {"TITLE":"CLOSED","KEY":"C"},
+  {"TITLE": "OPEN", "KEY": "P"},
+  {"TITLE": "STARTED", "KEY": "S"},
+  {"TITLE": "HOLD", "KEY": "H"},
+  {"TITLE": "CLOSED", "KEY": "C"},
 ];
 
 class GroupingData {

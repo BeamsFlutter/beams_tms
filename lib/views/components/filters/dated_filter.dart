@@ -177,11 +177,11 @@ class _DatedFilterState extends State<DatedFilter> {
                   ],
                 ),
               ),
-              Column(
+              /*Column(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   gapHC(10),
-                  SizedBox(
+                  const SizedBox(
                     height: 100,
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.end,
@@ -239,7 +239,7 @@ class _DatedFilterState extends State<DatedFilter> {
                     ),
                   ),
                 ],
-              ),
+              ),*/
             ],
           ),
         ),
@@ -325,7 +325,6 @@ class _DatedFilterState extends State<DatedFilter> {
         // TODO: Handle this case.
         break;
     }
-
   }
 
   Future<void> _wSelectFromDate() async {
