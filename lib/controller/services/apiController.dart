@@ -739,4 +739,29 @@ class ApiCall with BaseController {
 
     return response;
   }
+
+  Future<dynamic> apiTaskReportDet(
+      filter, startDate, endDate, keyVal, userCd, profileYN) async {
+    var request = jsonEncode(<dynamic, dynamic>{
+      "TYPE_LIST": keyVal, //[{'COL_VAL':'', 'KEY_VAL':''// }]
+      "FIXED_FILTER": filter, //[{'COL_VAL':'', 'KEY_VAL':''// }]
+      "STARTDATE": startDate,
+      "ENDDATE": endDate,
+      'USERCODE': userCd,
+      'PROFILE_YN': profileYN,
+    });
+    dprint('api/taskReportDet');
+    dprint(request);
+    var response =
+    await ApiManager().post('api/taskReportDet', request).catchError((error) {
+      if (error is BadRequestException) {
+      } else {
+        handleError(error);
+      }
+    });
+    dprint(response);
+    if (response == null) return;
+
+    return response;
+  }
 }
