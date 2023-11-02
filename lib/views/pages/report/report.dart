@@ -1,3 +1,5 @@
+import 'package:bams_tms/controller/global/globalValues.dart';
+import 'package:bams_tms/controller/services/apiController.dart';
 import 'package:bams_tms/views/components/filters/dated_filter.dart';
 import 'package:bams_tms/views/components/filters/filter_head.dart';
 import 'package:bams_tms/views/pages/users/usershome.dart';
@@ -18,6 +20,8 @@ class ReportScreen extends StatefulWidget {
 
 class _ReportScreenState extends State<ReportScreen> {
   final scaffoldKey = GlobalKey<ScaffoldState>();
+  ApiCall apiCall = ApiCall();
+  final Global g = Global();
 
   var sideNavigation = "";
   String title = 'User Report';
@@ -30,8 +34,23 @@ class _ReportScreenState extends State<ReportScreen> {
   DateTime now = DateTime.now();
 
   var lResultList = [];
+  var lVisibleList = [];
+  var blSideScreen = false;
+  var blColorWise = false;
+  var lstrViewKey = "";
 
-  var blSideScreen = true;
+  var groupBy  = [
+    {
+    "TITLE":"USER",
+    "KEY":"USER_CODE",
+    "PARA":"A.USER_CODE",
+    },
+    {
+      "TITLE":"PRIORITY",
+      "KEY":"PRIORITY_DESCP",
+      "PARA":"B.PRIORITY",
+    }
+  ];
 
   @override
   void initState() {
@@ -70,7 +89,7 @@ class _ReportScreenState extends State<ReportScreen> {
             Expanded(
               child: Row(
                 children: [
-                  wLeftSideBar(),
+                 // wLeftSideBar(),
                   wCenterSection(),
                   blSideScreen ? gapWC(0) : wRightFilterSection(),
                 ],
@@ -189,26 +208,42 @@ class _ReportScreenState extends State<ReportScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      tc(title, Colors.deepOrange, 15),
+                      Row(
+                        children: [
+                          Bounce(
+                            duration: const Duration(milliseconds: 110),
+                            onPressed: () {
+                              Navigator.of(context).pushReplacement(
+                                MaterialPageRoute(
+                                  builder: (context) => const UserHome(),
+                                ),
+                              );
+                            },
+                            child: Container(
+                              width: 25,
+                              height: 25,
+                              alignment: Alignment.center,
+                              // decoration: boxGradientDecoration(22, 15),
+                              decoration: boxBaseDecoration(Colors.black, 15),
+                              padding: const EdgeInsets.all(0),
+                              // child: tc('TM', Colors.white, 15),
+                              child: const Center(
+                                child: Icon(
+                                  Icons.arrow_back_ios_new_rounded,
+                                  color: Colors.white,
+                                  size: 16,
+                                ),
+                              ),
+                            ),
+                          ),
+                          gapWC(10),
+                          tc('Report', black, 18),
+                        ],
+                      ),
                       const Expanded(
                         child: SizedBox(),
                       ),
-                      GestureDetector(
-                        onTap: () {
-                          if (mounted) {
-                            setState(() {
-                              blSideScreen = blSideScreen ? false : true;
-                            });
-                          }
-                        },
-                        child: Icon(
-                          blSideScreen
-                              ? Icons.filter_alt_rounded
-                              : Icons.filter_alt_off_rounded,
-                          color: Colors.deepOrange,
-                          size: 20,
-                        ),
-                      ),
+
                       // TODO Export and Clear Here
                       gapWC(10),
                       Bounce(
@@ -239,7 +274,35 @@ class _ReportScreenState extends State<ReportScreen> {
                       gapWC(10),
                       Bounce(
                         onPressed: () {
-                          // fnFilterClear();
+                          if(mounted){
+                            setState(() {
+                              blColorWise = !blColorWise;
+                            });
+                          }
+                        },
+                        duration: const Duration(milliseconds: 110),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 20, vertical: 4),
+                          decoration: boxGradientDecorationBase(7, 30),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                               Icon(blColorWise?
+                                Icons.radio_button_checked:Icons.radio_button_off,
+                                color: Colors.white,
+                                size: 12,
+                              ),
+                              gapWC(5),
+                              tcn1('Color', Colors.white, 12),
+                            ],
+                          ),
+                        ),
+                      ),
+                      gapWC(10),
+                      Bounce(
+                        onPressed: () {
+                           fnFilterClear();
                           // apiGetTask("");
                         },
                         duration: const Duration(milliseconds: 110),
@@ -260,6 +323,23 @@ class _ReportScreenState extends State<ReportScreen> {
                               tcn1('Clear', Colors.black, 12),
                             ],
                           ),
+                        ),
+                      ),
+                      gapWC(10),
+                      GestureDetector(
+                        onTap: () {
+                          if (mounted) {
+                            setState(() {
+                              blSideScreen = blSideScreen ? false : true;
+                            });
+                          }
+                        },
+                        child: Icon(
+                          blSideScreen
+                              ? Icons.filter_alt_rounded
+                              : Icons.arrow_circle_right_rounded,
+                          color: Colors.deepOrange,
+                          size: 20,
                         ),
                       ),
                       gapWC(10),
@@ -284,25 +364,125 @@ class _ReportScreenState extends State<ReportScreen> {
               },
             ),
             gapHC(10),
-            /*if (_selectedGroupByItems.isNotEmpty)
-              for (int i = 0; i < _groupByData.length; i++)
-                _groupedTreeStructure(i, _selectedGroupByItems.first['key']),*/
+            Expanded(child: ListView.builder(
+                physics: const AlwaysScrollableScrollPhysics(),
+                itemCount: lResultList.where((e) => e["GROUP"] == 1).length,
+                itemBuilder: (context, index){
+                  var data = lResultList.where((e) => e["GROUP"] == 1).toList()[index];
+                  return wGroupHead(data);
+                }
+            ))
           ],
         ),
       ),
     );
   }
 
+
+  Widget wGroupHead(data){
+    var subList = (data["PARENT_DATA"]??[]);
+    var title = (data["DATA"]??"");
+    var parentKey = (data["PARENT_KEY"]??"");
+    var orderNo = data["GROUP"];
+    var hour = fnConvertHoursToHMS(g.mfnDbl(data["TIME_HR"])).toString();
+    var count = (data["COUNT"]??"").toString();
+    var key  = "$title$orderNo$parentKey";
+    return Column(
+      children: [
+        GestureDetector(
+          onTap: (){
+            setState(() {
+              if(lVisibleList.contains(key)){
+                lVisibleList.remove(key);
+              }else{
+                lVisibleList.add(key);
+              }
+            });
+          },
+          child: MouseRegion(
+            onHover: (sts) {
+              if (mounted) {
+                setState(() {
+                  lstrViewKey = key;
+                });
+              }
+            },
+            child: Container(
+              padding:  const EdgeInsets.all(10),
+              margin: EdgeInsets.only(left: orderNo * 15.0,bottom: 2),
+              //_colorList[orderNo].withOpacity(0.1)
+              decoration:
+              orderNo ==1?boxDecoration(lstrViewKey ==key?yellowLight.withOpacity(0.5):  Colors.white, 5):
+              boxBaseDecoration(lstrViewKey ==key?yellowLight.withOpacity(0.5): orderNo >1?blColorWise?_colorList[orderNo].withOpacity(0.1): blueLight: Colors.white, 5),
+              child: Row(
+                children: [
+                  Flexible(
+                    flex: 8,
+                    child: Row(
+                      children: [
+                        lVisibleList.contains(key)? const Icon(Icons.arrow_drop_down_sharp,size: 18,): const Icon(Icons.arrow_right_rounded,size: 18,),
+                        gapWC(5),
+                        orderNo ==1?tc(title, Colors.black, 13):
+                        tcn(title, Colors.black, 13),
+                      ],
+                    ),
+                  ),
+                  Flexible(
+                      flex: 1,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        orderNo ==1?tc(count, Colors.black, 13):
+                        tcn(count, Colors.black, 13),
+                      ],
+                    )
+                  ),
+                  Flexible(
+                      flex: 1,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        orderNo ==1? tc(hour, Colors.black, 13):
+                        tcn(hour, Colors.black, 13),
+                      ],
+                    )
+                  ),
+
+
+                ],
+              ),
+            ),
+          ),
+        ),
+        // Padding(padding: EdgeInsets.only(left: orderNo * 15.0)
+        // ,child:   Divider(color: Colors.grey.shade500,height: 0.2,),),
+        lVisibleList.contains(key)?
+        Column(
+            children: wSubList(title,data,orderNo)
+        ):gapHC(0)
+      ],
+    );
+  }
+
+  List<Widget> wSubList(title,data,orderNo){
+    List<Widget> rtnList = [];
+    var subData = lResultList.where((e) => e["GROUP"] == orderNo+1 && e["PARENT_KEY"] == title).toList();
+    for(var e in subData){
+      rtnList.add(  wGroupHead(e));
+    }
+    return rtnList;
+  }
+
   Widget wRightFilterSection() {
     return Container(
       width: 320,
-      padding: const EdgeInsets.all(10),
-      decoration: boxBaseDecoration(Colors.white, 0),
+      padding: const EdgeInsets.all(5),
+      decoration: boxDecoration(Colors.white, 0),
       child: Column(
         children: [
           Expanded(
             child: Container(
-              decoration: boxOutlineCustom1(Colors.white, 10, black, 0.5),
+              //decoration: boxOutlineCustom1(Colors.white, 10, Colors.grey.withOpacity(0.5), 0.5),
               padding: const EdgeInsets.all(10),
               child: DatedFilter(
                 otherFilters: [
@@ -333,10 +513,42 @@ class _ReportScreenState extends State<ReportScreen> {
                       for (var item in _groupByItems) _groupBy(item),
                     ],
                   ),
+                  gapHC(10),
+                  Row(
+                    children: [
+                      const Icon(
+                        Icons.mode_standby_outlined,
+                        color: Colors.teal,
+                        size: 16,
+                      ),
+                      gapWC(10),
+                      Text(
+                        'Status',
+                        style: GoogleFonts.poppins(
+                          textStyle: const TextStyle(
+                            color: Colors.black,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  gapHC(10),
+                  Wrap(
+                    children: [
+                      for (var item in _statusData) _status(item),
+                    ],
+                  ),
                 ],
                 filterFunction: (from, to) => setDateRange(from, to),
                 onClear: () {},
-                onApply: () {},
+                onApply: () async {
+                  _apiDataFetch();
+                },
+                onDateChange: () {
+                  _apiDataFetch();
+                },
               ),
             ),
           ),
@@ -395,6 +607,7 @@ class _ReportScreenState extends State<ReportScreen> {
       fromDate = from;
       toDate = to;
     });
+    _apiDataFetch();
   }
 
   fnPageLoad() {
@@ -408,7 +621,7 @@ class _ReportScreenState extends State<ReportScreen> {
         'selectedGroupBy': _selectedGroupByItems,
       };
     });
-    _apiDataFetch(_groupByData);
+    _apiDataFetch();
   }
 
   _groupBy(item) {
@@ -464,6 +677,59 @@ class _ReportScreenState extends State<ReportScreen> {
       ),
     );
   }
+  _status(item) {
+    return Bounce(
+      onPressed: () {
+        setState(() {
+          if (_selectedStatus.contains(item)) {
+            _selectedStatus.remove(item);
+          } else {
+            _selectedStatus.add(item);
+          }
+          _apiDataFetch();
+        });
+      },
+      duration: const Duration(milliseconds: 110),
+      child: Container(
+        padding: const EdgeInsets.symmetric(
+          horizontal: 15,
+          vertical: 10,
+        ),
+        decoration: boxOutlineCustom1(
+          Colors.white,
+          5,
+          Colors.grey.shade300,
+          0.5,
+        ),
+        child: Row(
+          children: [
+            if (_selectedStatus.contains(item))
+              const SizedBox(
+                width: 20,
+                height: 20,
+                child: Center(
+                  child: Icon(
+                    Icons.check,
+                    color: color2,
+                    size: 18,
+                  ),
+                ),
+              ),
+            if (_selectedStatus.contains(item)) gapWC(10),
+            Text(
+              item["TITLE"]?? '',
+              style: GoogleFonts.poppins(
+                textStyle: const TextStyle(
+                  color: Colors.black,
+                  fontSize: 14,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
   _selectedGroupByView() {
     return Row(
@@ -496,141 +762,323 @@ class _ReportScreenState extends State<ReportScreen> {
     );
   }
 
-  _apiDataFetch(data) {
+  _apiDataFetch() async {
+
+
+    var col = [];
+    var fil = [];
+
+    //TODO FILTER
+
+    for(var e in _selectedStatus){
+      if((e["KEY"]??"") == "P"){
+        fil.add({
+          "COL_KEY":"STATUS",
+          "COL_VAL": "A",
+        });
+        fil.add({
+          "COL_KEY":"STATUS",
+          "COL_VAL": "H",
+        });
+      }
+      fil.add({
+        "COL_KEY":"STATUS",
+        "COL_VAL": (e["KEY"]??""),
+      });
+    }
+
+
+    for (var se in _selectedGroupByItems) {
+      for (var seKey in se['REQUEST_KEY']) {
+        col.add(seKey);
+      }
+    }
+    dynamic response = await apiCall.apiTaskReport(
+        col,
+        setDate(2, fromDate),
+        setDate(2, toDate),
+        fil,
+        g.wstrUserCd,
+        'N');
+    if(mounted){
+      setState(() {
+        try{
+          _groupByData = response["HEAD"]??[];
+        }catch (e){
+          _groupByData =[];
+          dprint(e);
+        }
+
+      });
+    }
+    dprint('RESPONSE^^^^ $response');
+
+
+    var data = _groupByData;
     lResultList = [];
 
     //1. selected group list
-    var orderNo = 0;
-
+    var orderNo = 1;
+    var parentKey = "";
+    var parentData = [];
     for (var e in _selectedGroupByItems) {
-      var responseKey = (e["KEY"] ?? "").toString();
-
-      var index = 0;
-
+      var responseKey = (e["RETURN_KEY"] ?? "").toString();
       for (var de in data) {
-        // if (orderNo == 0) {
         if (lResultList
             // .where((re) => re["DATA"] == de[responseKey])
-            .where((re) => re['DATA'] == de[responseKey])
+            .where((re) => re['DATA'] == de[responseKey] && (re['PARENT_KEY']??"") == (de[parentKey]??""))
             .toList()
             .isEmpty) {
           //2.ADD TO RESULT DATA
-
           var count = 0;
           var hour = 0.0;
-          var dataSorList =
-              data.where((re) => re[responseKey] == de[responseKey]).toList();
+          var dataSorList = [];
+          if (orderNo == 1) {
+            dataSorList = data.where((re) => re[responseKey] == de[responseKey]).toList();
 
-          /*lResultList.add({
-            "GROUP": orderNo,
-            "KEY": responseKey,
-            "DATA": (de[responseKey] ?? "").toString(),
-          });*/
+            for(var f in dataSorList){
+              count += int.parse(f["COUNTS"].toString());
+              hour += double.parse(f["TIME_HR"].toString());
+            }
 
-          lResultList.add(GroupingData(
-            level: orderNo,
-            index: index,
-            /*user: de['USER'],
-              clientId: de['CLIENT_ID'],
-              module: de['MODULE'],*/
-            data: de[responseKey],
-            timeHr: 0.0,
-            count: 0,
-            parentData: {},
-          ).toJson());
-          index += 1;
+            setState(() {
+              lResultList.add({
+                "GROUP": orderNo,
+                "KEY": responseKey,
+                "DATA": (de[responseKey] ?? "").toString(),
+                "PARENT_KEY": (de[parentKey] ?? "").toString(),
+                "PARENT_DATA": dataSorList,
+                "TIME_HR": hour,
+                "COUNT": count,
+              });
+            });
+          }else{
+
+            var lst = lResultList.where((re) => (re['DATA']??"") == (de[parentKey]??"")).toList();
+            if(lst.isNotEmpty){
+              parentData =lst[0]["PARENT_DATA"];
+              dataSorList = parentData.where((re) => re[responseKey] == de[responseKey]).toList();
+            }
+
+
+            for(var f in dataSorList){
+              count += int.parse(f["COUNTS"].toString());
+              hour += double.parse(f["TIME_HR"].toString());
+            }
+
+            if(parentData.where((pe) => pe == de).toList().isNotEmpty){
+              setState(() {
+                lResultList.add({
+                  "GROUP": orderNo,
+                  "KEY": responseKey,
+                  "DATA": (de[responseKey] ?? "").toString(),
+                  "PARENT_KEY": (de[parentKey] ?? "").toString(),
+                  "PARENT_DATA": dataSorList,
+                  "TIME_HR": hour,
+                  "COUNT": count,
+                });
+              });
+            }
+          }
+
         }
-        // } else {
-        // for (int i = 0; i < ){
-        /* if () {
-            lResultList.add(GroupingData(
-              user: 'user',
-              clientId: 'clientId',
-              module: 'module',
-              timeHr: 0.0,
-              count: 0,
-              parentData: {},
-            ));
-          }*/
-        // }
-        // }
       }
-
+      parentKey = responseKey;
       orderNo += 1;
     }
 
     dprint("=========================## RESULTLIST");
     dprint(lResultList);
   }
+
+  fnConvertHoursToHMS(double hours) {
+    // Find the number of hours
+    int fullHours = hours.toInt();
+    // Find the remaining minutes
+    double remainingHours = hours - fullHours;
+    int minutes = (remainingHours * 60).toInt();
+    // Find the remaining seconds
+    double remainingMinutes = (remainingHours * 60) - minutes;
+    int seconds = (remainingMinutes * 60).toInt();
+    // Print the result in HH:MM:SS format
+    print('$fullHours:$minutes:$seconds');
+
+    return  '$fullHours:$minutes:$seconds';
+  }
+
+  fnFilterClear(){
+    if(mounted){
+      setState(() {
+        _selectedStatus = [];
+        _selectedGroupByItems = [];
+      });
+      _apiDataFetch();
+    }
+  }
 }
+
+List _colorList = [
+  Colors.white,
+  Colors.red,
+  Colors.red,
+  Colors.green,
+  Colors.deepOrangeAccent,
+  Colors.pink,
+  Colors.cyan,
+  Colors.blue,
+  Colors.indigo,
+  Colors.blueGrey,
+  Colors.purple,
+  Colors.amber,
+  Colors.white,
+];
 
 Map _groupingData = {};
 
 List _groupByItems = [
+
   {
-    'TITLE': 'User',
-    'KEY': 'USER',
-    'PARAM': '',
-  },
-  /*{
-    'TITLE': 'Date',
-    'KEY': '',
-    'PARAM': '',
-  },*/
-  {
-    'TITLE': 'Client',
-    'KEY': 'CLIENT_ID',
-    'PARAM': '',
+    'TITLE': 'TASKNO',
+    'RETURN_KEY': 'TASKNO',
+    'REQUEST_KEY': [
+      {
+        "COL_KEY": "B.DOCNO",
+        "COL_VAL": "TASKNO",
+      },
+    ],
   },
   {
-    'TITLE': 'Module',
-    'KEY': 'MODULE',
-    'PARAM': '',
-  },
-  /*{
-    'TITLE': 'Issue',
-    'KEY': '',
-    'PARAM': '',
+    'TITLE': 'USER',
+    'RETURN_KEY': 'USER_DESP',
+    'REQUEST_KEY': [
+      {
+        "COL_KEY": "A.USER_CODE",
+        "COL_VAL": "USER_CODE",
+      },
+      {
+        "COL_KEY": "A.USER_DESP",
+        "COL_VAL": "USER_DESP",
+      },
+    ],
   },
   {
-    'TITLE': 'Department',
-    'KEY': '',
-    'PARAM': '',
+    'TITLE': 'DEPARTMENT',
+    'RETURN_KEY': 'DEPARTMENT_DESCP',
+    'REQUEST_KEY': [
+      {
+        "COL_KEY": "D.DEPARTMENT_CODE",
+        "COL_VAL": "DEPARTMENT_CODE",
+      },
+      {
+        "COL_KEY": "D.DEPARTMENT_DESCP",
+        "COL_VAL": "DEPARTMENT_DESCP",
+      },
+    ],
   },
   {
-    'TITLE': 'Priority',
-    'KEY': '',
-    'PARAM': '',
-  },*/
+    'TITLE': 'DATE',
+    'RETURN_KEY': 'DATE',
+    'REQUEST_KEY': [
+      {
+        "COL_KEY": "CAST(A.START_TIME AS DATE)",
+        "COL_VAL": "DATE",
+      },
+    ],
+  },
+  {
+    'TITLE': 'MAIN CLIENT ID',
+    'RETURN_KEY': 'MAIN_COMPANY_NAME',
+    'REQUEST_KEY': [
+      {
+        "COL_KEY": "B.MAIN_CLIENT_ID",
+        "COL_VAL": "MAIN_CLIENT_ID",
+      },
+      {
+        "COL_KEY": "C.MAIN_COMPANY_NAME",
+        "COL_VAL": "MAIN_COMPANY_NAME",
+      },
+    ],
+  },
+  {
+    'TITLE': 'CLIENT ID',
+    'RETURN_KEY': 'CLIENT_NAME',
+    'REQUEST_KEY': [
+      {
+        "COL_KEY": "B.CLIENT_ID",
+        "COL_VAL": "CLIENT_ID",
+      },
+      {
+        "COL_KEY": "C.NAME",
+        "COL_VAL": "CLIENT_NAME",
+      },
+    ],
+  },
+
+  {
+    'TITLE': 'MODULE',
+    'RETURN_KEY': 'MODULE',
+    'REQUEST_KEY': [
+      {
+        "COL_KEY": "B.MODULE",
+        "COL_VAL": "MODULE",
+      },
+    ],
+  },
+  {
+    'TITLE': 'ISSUE TYPE',
+    'RETURN_KEY': 'ISSUE_DESCP',
+    'REQUEST_KEY': [
+      {
+        "COL_KEY": "B.ISSUE_TYPE",
+        "COL_VAL": "ISSUE_TYPE",
+      },
+      {
+        "COL_KEY": "E.DESCP",
+        "COL_VAL": "ISSUE_DESCP",
+      },
+    ],
+  },
+  {
+    'TITLE': 'PRIORITY',
+    'RETURN_KEY': 'PRIORITY_DESCP',
+    'REQUEST_KEY': [
+      {
+        "COL_KEY": "B.PRIORITY",
+        "COL_VAL": "ISSUE_TYPE",
+      },
+      {
+        "COL_KEY": "F.DESCP",
+        "COL_VAL": "PRIORITY_DESCP",
+      },
+    ],
+  },
+
+  {
+    'TITLE': 'STATUS',
+    'RETURN_KEY': 'STATUS_DESCP',
+    'REQUEST_KEY': [
+      {
+        "COL_KEY": "STATUS",
+        "COL_VAL": "CURR_STATUS",
+      },
+      {
+        "COL_KEY": "G.DESCP",
+        "COL_VAL": "STATUS_DESCP",
+      },
+    ],
+  },
 ];
 
 List _selectedGroupByItems = [];
+List _selectedStatus = [];
 
-List _groupByData = [
-  {
-    'USER': 'Hakeem',
-    'CLIENT_ID': 'Beams',
-    'MODULE': 'JOB',
-    'TIME_HR': 15.0,
-    'COUNT': 1,
-    // 'CONTENT_SHOWN': false,
-  },
-  {
-    'USER': 'Hakeem',
-    'CLIENT_ID': 'Splash',
-    'MODULE': 'APP',
-    'TIME_HR': 10.0,
-    'COUNT': 5,
-    // 'CONTENT_SHOWN': false,
-  },
-  {
-    'USER': 'Ashiq',
-    'CLIENT_ID': 'Beams',
-    'MODULE': 'APP',
-    'TIME_HR': 5.0,
-    'COUNT': 10,
-    // 'CONTENT_SHOWN': false,
-  },
+List _groupByData = [];
+
+List _statusData = [
+  {"TITLE":"OPEN","KEY":"P"},
+  {"TITLE":"STARTED","KEY":"S"},
+  {"TITLE":"HOLD","KEY":"H"},
+  {"TITLE":"CLOSED","KEY":"C"},
 ];
 
 class GroupingData {

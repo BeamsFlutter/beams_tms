@@ -10,6 +10,7 @@ class DatedFilter extends StatefulWidget {
   final Function(DateTime, DateTime) filterFunction;
   final VoidCallback onClear;
   final VoidCallback onApply;
+  final VoidCallback onDateChange;
 
   const DatedFilter({
     super.key,
@@ -17,6 +18,7 @@ class DatedFilter extends StatefulWidget {
     required this.filterFunction,
     required this.onClear,
     required this.onApply,
+    required this.onDateChange,
   });
 
   @override
@@ -57,7 +59,7 @@ class _DatedFilterState extends State<DatedFilter> {
                   size: 20,
                 ),
                 gapWC(5),
-                tc('Filters', color3, 12),
+                tc('Filters', color3, 14),
                 gapWC(5),
               ],
             ),
@@ -69,7 +71,7 @@ class _DatedFilterState extends State<DatedFilter> {
           ],
         ),
         gapHC(5),
-        lineC(0.5, Colors.black),
+        lineC(0.5, Colors.grey),
         gapHC(5),
         Flexible(
           child: Column(
@@ -184,55 +186,55 @@ class _DatedFilterState extends State<DatedFilter> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
-                        Bounce(
-                          onPressed: () {
-                            _fnSetMode(DateMode.tw);
-                            widget.onClear();
-                          },
-                          duration: const Duration(milliseconds: 110),
-                          child: Container(
-                            decoration: boxBaseDecoration(Colors.blueGrey, 20),
-                            padding: const EdgeInsets.all(10),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                const Icon(
-                                  Icons.close,
-                                  color: Colors.white,
-                                  size: 14,
-                                ),
-                                gapWC(10),
-                                tcn1('Clear', Colors.white, 14),
-                                gapWC(5),
-                              ],
-                            ),
-                          ),
-                        ),
-                        gapHC(10),
-                        Bounce(
-                          onPressed: () {
-                            widget.filterFunction(fromDate, toDate);
-                            widget.onApply();
-                          },
-                          duration: const Duration(milliseconds: 110),
-                          child: Container(
-                            decoration: boxBaseDecoration(Colors.green, 20),
-                            padding: const EdgeInsets.all(10),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                const Icon(
-                                  Icons.check,
-                                  color: Colors.white,
-                                  size: 14,
-                                ),
-                                gapWC(10),
-                                tcn1('Apply', Colors.white, 14),
-                                gapWC(5),
-                              ],
-                            ),
-                          ),
-                        ),
+                        // Bounce(
+                        //   onPressed: () {
+                        //     _fnSetMode(DateMode.tw);
+                        //     widget.onClear();
+                        //   },
+                        //   duration: const Duration(milliseconds: 110),
+                        //   child: Container(
+                        //     decoration: boxBaseDecoration(Colors.blueGrey.withOpacity(0.2), 20),
+                        //     padding: const EdgeInsets.all(7),
+                        //     child: Row(
+                        //       mainAxisAlignment: MainAxisAlignment.center,
+                        //       children: [
+                        //         const Icon(
+                        //           Icons.close,
+                        //           color: Colors.black,
+                        //           size: 14,
+                        //         ),
+                        //         gapWC(10),
+                        //         tcn1('Clear', Colors.black, 14),
+                        //         gapWC(5),
+                        //       ],
+                        //     ),
+                        //   ),
+                        // ),
+                        // gapHC(10),
+                        // Bounce(
+                        //   onPressed: () {
+                        //     widget.filterFunction(fromDate, toDate);
+                        //     widget.onApply();
+                        //   },
+                        //   duration: const Duration(milliseconds: 110),
+                        //   child: Container(
+                        //     decoration: boxBaseDecoration(Colors.green, 20),
+                        //     padding: const EdgeInsets.all(7),
+                        //     child: Row(
+                        //       mainAxisAlignment: MainAxisAlignment.center,
+                        //       children: [
+                        //         const Icon(
+                        //           Icons.check,
+                        //           color: Colors.white,
+                        //           size: 14,
+                        //         ),
+                        //         gapWC(10),
+                        //         tcn1('Apply', Colors.white, 14),
+                        //         gapWC(5),
+                        //       ],
+                        //     ),
+                        //   ),
+                        // ),
                       ],
                     ),
                   ),
@@ -323,6 +325,7 @@ class _DatedFilterState extends State<DatedFilter> {
         // TODO: Handle this case.
         break;
     }
+
   }
 
   Future<void> _wSelectFromDate() async {

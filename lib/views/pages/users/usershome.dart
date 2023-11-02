@@ -387,8 +387,7 @@ class _UserHomeState extends State<UserHome> {
                               builder: (context) => const ReportScreen()));
                         },
                         child: Container(
-                          decoration: boxOutlineCustom1(Colors.redAccent, 30,
-                              redLight.withOpacity(0.5), 1.0),
+                          decoration: boxGradientDecorationBase(7, 30),
                           padding: const EdgeInsets.all(10),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
@@ -396,7 +395,7 @@ class _UserHomeState extends State<UserHome> {
                               tcn1('Reports', Colors.white, 12),
                               gapWC(5),
                               const Icon(
-                                Icons.sticky_note_2_outlined,
+                                Icons.bubble_chart_outlined,
                                 color: Colors.white,
                                 size: 14,
                               )

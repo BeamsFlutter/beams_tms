@@ -29,185 +29,137 @@ class _FilterHeadState extends State<FilterHead> {
 
   @override
   build(context) {
-    return Flexible(
-      child: Stack(
-        children: [
-          Column(
-            children: [
-              Flexible(
-                // TODO Head Row
-                child: Container(
-                  decoration: boxDecoration(Colors.white, 10),
-                  padding: const EdgeInsets.all(10),
-                  child: Row(
-                    children: [
-                      for (var f in widget.headList)
-                        if (f.isActive)
-                          Flexible(
-                            flex: f.width,
-                            child: Row(
-                              children: [
-                                Flexible(
-                                  child: Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      tc(f.title, color3, 12),
-                                      Bounce(
-                                        onPressed: () {},
-                                        duration:
-                                            const Duration(milliseconds: 110),
-                                        child: const Icon(
-                                          Icons.filter_alt_rounded,
-                                          color: Colors.black,
-                                          size: 14,
-                                        ),
-                                      ),
-                                    ],
+    return Stack(
+      children: [
+        Column(
+          children: [
+            Container(
+              decoration: boxDecoration(Colors.white, 10),
+              padding: const EdgeInsets.all(10),
+              child: Row(
+                children: [
+                  for (var f in widget.headList)
+                    if (f.isActive)
+                      Flexible(
+                        flex: f.width,
+                        child: Row(
+                          children: [
+                            Flexible(
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  tc(f.title, color3, 12),
+                                  Bounce(
+                                    onPressed: () {},
+                                    duration:
+                                        const Duration(milliseconds: 110),
+                                    child: const Icon(
+                                      Icons.filter_alt_rounded,
+                                      color: Colors.black,
+                                      size: 14,
+                                    ),
                                   ),
-                                ),
-                                gapWC(15),
-                              ],
+                                ],
+                              ),
                             ),
-                          ),
-                      Bounce(
-                        onPressed: () {
-                          showHeadCheckList();
-                        },
-                        duration: const Duration(milliseconds: 110),
-                        child: const Icon(
-                          Icons.checklist,
-                          color: Colors.deepOrange,
-                          size: 20,
+                            gapWC(15),
+                          ],
                         ),
                       ),
-                    ],
+                  Bounce(
+                    onPressed: () {
+                      showHeadCheckList();
+                    },
+                    duration: const Duration(milliseconds: 110),
+                    child: const Icon(
+                      Icons.checklist,
+                      color: Colors.deepOrange,
+                      size: 20,
+                    ),
                   ),
-                ),
+                ],
               ),
-              if (widget.dataMap.isNotEmpty)
-                Flexible(
-                  // TODO Table Row
-                  child: (widget.dataMap['grouped'] == null ||
-                          widget.dataMap['grouped'].isEmpty)
-                      ? ListView(
-                          children: [
-                            if (widget.dataMap['normal'] != null &&
-                                widget.dataMap.isNotEmpty)
-                              for (var d in widget.dataMap['normal'])
-                                SizedBox(
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    children: [
-                                      for (var f in defaultHeadList)
-                                        if (f.isActive)
-                                          Text(
-                                            d[f.key],
-                                            style: const TextStyle(
-                                              color: Colors.black,
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 16,
+            ),
+          ],
+        ),
+        if (showCheckList)
+          InkWell(
+            onTap: () {
+              hideHeadCheckList();
+            },
+            child: Container(
+              margin: const EdgeInsets.only(top: 40),
+              color: Colors.grey.shade500.withOpacity(0.1),
+              child: Align(
+                alignment: const AlignmentDirectional(1, -1),
+                child: Padding(
+                  padding: const EdgeInsets.only(right: 5),
+                  child: Container(
+                    width: 250,
+                    height: 400,
+                    decoration: boxDecoration(Colors.white, 5),
+                    child: Column(
+                      children: [
+                        Expanded(
+                          child: ListView.builder(
+                            itemCount: defaultHeadList.length,
+                            itemBuilder: (context, index) => Material(
+                              child: InkWell(
+                                onTap: () {
+                                  setState(() {
+                                    defaultHeadList[index].isActive =
+                                        !defaultHeadList[index].isActive;
+                                  });
+                                },
+                                child: Container(
+                                  decoration: boxOutlineCustom(
+                                      Colors.white, 0, Colors.grey.shade200),
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 15,
+                                      vertical: 10,
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        Container(
+                                          width: 15,
+                                          height: 15,
+                                          decoration: boxOutlineCustom(
+                                              defaultHeadList[index].isActive
+                                                  ? color2
+                                                  : Colors.white,
+                                              5,
+                                              defaultHeadList[index].isActive
+                                                  ? color2
+                                                  : Colors.grey.shade300),
+                                          child: const Center(
+                                            child: Icon(
+                                              Icons.check,
+                                              color: Colors.white,
+                                              size: 12,
                                             ),
                                           ),
-                                    ],
-                                  ),
-                                ),
-                          ],
-                        )
-                      /*: groupedView(widget.dataMap['grouped']['data'],
-                          widget.dataMap['grouped']['selectedGroupBy'], 0),*/
-                      : ListView.builder(
-                          itemCount: groupedData.length,
-                          itemBuilder: (context, index) {
-                            return groupItemBuilder(
-                                widget.dataMap['grouped']['data'],
-                                groupedData,
-                                0,
-                                index,
-                                widget.dataMap['grouped']['selectedGroupBy']);
-                          },
-                        ),
-                ),
-            ],
-          ),
-          if (showCheckList)
-            InkWell(
-              onTap: () {
-                hideHeadCheckList();
-              },
-              child: Container(
-                margin: const EdgeInsets.only(top: 40),
-                color: Colors.grey.shade500.withOpacity(0.1),
-                child: Align(
-                  alignment: const AlignmentDirectional(1, -1),
-                  child: Padding(
-                    padding: const EdgeInsets.only(right: 5),
-                    child: Container(
-                      width: 250,
-                      height: 400,
-                      decoration: boxDecoration(Colors.white, 5),
-                      child: Column(
-                        children: [
-                          Expanded(
-                            child: ListView.builder(
-                              itemCount: defaultHeadList.length,
-                              itemBuilder: (context, index) => Material(
-                                child: InkWell(
-                                  onTap: () {
-                                    setState(() {
-                                      defaultHeadList[index].isActive =
-                                          !defaultHeadList[index].isActive;
-                                    });
-                                  },
-                                  child: Container(
-                                    decoration: boxOutlineCustom(
-                                        Colors.white, 0, Colors.grey.shade200),
-                                    child: Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 15,
-                                        vertical: 10,
-                                      ),
-                                      child: Row(
-                                        children: [
-                                          Container(
-                                            width: 15,
-                                            height: 15,
-                                            decoration: boxOutlineCustom(
-                                                defaultHeadList[index].isActive
-                                                    ? color2
-                                                    : Colors.white,
-                                                5,
-                                                defaultHeadList[index].isActive
-                                                    ? color2
-                                                    : Colors.grey.shade300),
-                                            child: const Center(
-                                              child: Icon(
-                                                Icons.check,
-                                                color: Colors.white,
-                                                size: 12,
-                                              ),
-                                            ),
-                                          ),
-                                          gapWC(5),
-                                          tc(defaultHeadList[index].title,
-                                              Colors.black, 14),
-                                        ],
-                                      ),
+                                        ),
+                                        gapWC(5),
+                                        tc(defaultHeadList[index].title,
+                                            Colors.black, 14),
+                                      ],
                                     ),
                                   ),
                                 ),
                               ),
                             ),
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
               ),
             ),
-        ],
-      ),
+          ),
+      ],
     );
   }
 
