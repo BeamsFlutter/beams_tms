@@ -503,6 +503,13 @@ List<FilterHeadItem> defaultHeadList = [
     isActive: true,
   ),
   FilterHeadItem(
+    key: 'ACTIVE',
+    title: 'Active User',
+    sort: 'Y',
+    width: 1,
+    isActive: true,
+  ),
+  FilterHeadItem(
     key: 'PRIORITY',
     title: 'Priority',
     sort: 'Y',

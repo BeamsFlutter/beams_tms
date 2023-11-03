@@ -9,6 +9,7 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../components/PopupLookup/filterPopup.dart';
+import '../../components/PopupLookup/searchpopup.dart';
 import '../../components/common/common.dart';
 import '../../components/filters/filter_head.dart';
 import '../../components/lookup/filterLookup.dart';
@@ -47,6 +48,7 @@ class _ReportScreenState extends State<ReportScreen> {
   var lstrViewKey = "";
 
   var lstrMenuHoverMode = "PROFILE";
+  var lstrStatusList = [];
   var lstrPriorityList = [];
   var lstrIssueTypeList = [];
   var lstrTPrvDocno = "";
@@ -102,6 +104,8 @@ class _ReportScreenState extends State<ReportScreen> {
 
   var txtSearch = TextEditingController();
   var txtController = TextEditingController();
+
+  ScrollController scrollController = ScrollController();
 
   var groupBy = [
     {
@@ -518,7 +522,7 @@ class _ReportScreenState extends State<ReportScreen> {
                         ),
                       ),
                     ],
-                  )
+                  ),
                 ],
               ),
             ),
@@ -530,15 +534,17 @@ class _ReportScreenState extends State<ReportScreen> {
             ),*/
             gapHC(10),
             Expanded(
-                child: ListView.builder(
-                    physics: const AlwaysScrollableScrollPhysics(),
-                    itemCount: lResultList.where((e) => e["GROUP"] == 1).length,
-                    itemBuilder: (context, index) {
-                      var data = lResultList
-                          .where((e) => e["GROUP"] == 1)
-                          .toList()[index];
-                      return wGroupHead(data);
-                    }))
+              child: ListView.builder(
+                physics: const AlwaysScrollableScrollPhysics(),
+                itemCount: lResultList.where((e) => e["GROUP"] == 1).length,
+                itemBuilder: (context, index) {
+                  var data =
+                      lResultList.where((e) => e["GROUP"] == 1).toList()[index];
+                  return wGroupHead(data);
+                },
+              ),
+            ),
+            gapHC(20),
           ],
         ),
       ),
@@ -729,7 +735,10 @@ class _ReportScreenState extends State<ReportScreen> {
         // ,child:   Divider(color: Colors.grey.shade500,height: 0.2,),),
         lVisibleList.contains(key)
             ? Column(children: wSubList(title, data, orderNo))
-            : gapHC(0)
+            : Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: wTaskList(),
+              ),
       ],
     );
   }
@@ -934,6 +943,660 @@ class _ReportScreenState extends State<ReportScreen> {
     } else {
       return gapWC(0);
     }
+  }
+
+  List<Widget> wTaskList() {
+    List<Widget> rtnList = [];
+    for (var e in lstrTaskList) {
+      var srno = e["SRNO"] ?? "";
+      var docno = e["DOCNO"] ?? "";
+      var doctype = e["DOCTYPE"] ?? "";
+      var docDate = e["DOCDATE"] ?? "";
+      var mainClientId = e["MAIN_CLIENT_ID"] ?? "";
+      var clientId = e["CLIENT_ID"] ?? "";
+      var clientCompany = e["CLIENT_COMPANY"] ?? "";
+      var clientCompanyName = e["COMPANY_NAME"] ?? "";
+      var contactPerson = e["CONTACT_PERSON"] ?? "";
+      var contactPersonMob = e["CONTACT_MOB"] ?? "";
+      var contactPersonEmail = e["CONTACT_EMAIL"] ?? "";
+      var taskHead = e["TASK_HEADER"] ?? "";
+      var taskDetails = e["TASK_DETAIL"] ?? "";
+
+      var createUser = e["CREATE_USER"] ?? "";
+      var activeUser = e["ACTIVE_USER"] ?? "";
+      var assignUser = e["ASSIGNED_USER"] ?? "";
+
+      var createDate = e["CREATE_DATE"] ?? "";
+      var closedTime = e["END_TIME"] ?? "";
+      var completedUser = e["COMPLETED_USER"] ?? "";
+      var deadlineDate = e["DEADLINE"] ?? "";
+      var priorityCode = e["PRIORITY"] ?? "";
+      var priority = e["PRIORITY_DESCP"] ?? "";
+      var status = e["CURR_STATUS"] ?? "";
+      var taskStatus = e["STATUS"] ?? "";
+      var lastStatus = e["LAST_ACTION"] ?? "";
+      var module = e["MODULE"] ?? "";
+      var taskType = e["TASK_TYPE"] ?? "";
+      var clientType = e["CLIENT_TYPE"] ?? "";
+      var issueTypeCode = e["ISSUE_TYPE"] ?? "";
+      var issueType = e["ISSUE_TYPE_DESCP"] ?? "";
+      var completionNote = e["COMPLETION_NOTE"] ?? "";
+      var departmentList = e["DEP_LIST"] ?? [];
+      var department = "";
+
+      for (var dep in departmentList) {
+        department += (dep["DESCP"] ?? "") + ",";
+      }
+
+      var taskDate =
+          createDate != "" ? setDate(7, DateTime.parse(createDate)) : "";
+      var deadline =
+          deadlineDate != "" ? setDate(7, DateTime.parse(deadlineDate)) : "";
+      var closeDate =
+          closedTime != "" ? setDate(7, DateTime.parse(closedTime)) : "";
+      var deadlineSts = false;
+
+      // if(lstrMenuHoverMode == "H" && g.wstrUserRole != "DEPHEAD"){
+      //   status = taskStatus;
+      // }
+
+      try {
+        var dDate = DateTime.parse(deadlineDate);
+        var now = DateTime.now();
+
+        if (dDate.isBefore(now)) {
+          deadlineSts = true;
+        }
+      } catch (e) {
+        deadlineSts = false;
+      }
+
+      if (activeUser.toString().isEmpty) {
+        activeUser = createUser;
+      }
+
+      rtnList.add(GestureDetector(
+        //duration:const Duration(milliseconds: 110),
+        onDoubleTap: () {
+          // apiGetTaskDet(mainClientId, docno, doctype);
+        },
+        child: MouseRegion(
+          onHover: (sts) {
+            if (mounted) {
+              setState(() {
+                flSortColumn = "";
+                lstrViewDocno = docno;
+              });
+            }
+          },
+          child: Container(
+            decoration: boxBaseDecoration(
+                lstrViewDocno == docno ? color2.withOpacity(0.1) : Colors.white,
+                0),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    wRowDet(
+                        stcn("${srno.toString()} .  $docno", color3, 10), 1),
+                    wRowDet(
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            status == "C" || status == "D"
+                                ? tcs(
+                                    taskHead.toString().toUpperCase(),
+                                    priority == "CRITICAL" && status == "P"
+                                        ? Colors.red
+                                        : Colors.black,
+                                    10)
+                                : stc(
+                                    taskHead.toString().toUpperCase(),
+                                    priority == "CRITICAL" && status == "P"
+                                        ? Colors.red
+                                        : Colors.black,
+                                    10),
+                            lstrViewDocno == docno
+                                ? stcn(taskDetails, Colors.black, 10)
+                                : gapHC(0),
+                          ],
+                        ),
+                        2),
+                    wRowDet(stcn(issueType, color3, 10), 1),
+                    wRowDet(
+                        stc(clientCompany + " | " + clientCompanyName, color3,
+                            10),
+                        2),
+                    wRowDet(stcn(module, color3, 10), 1),
+                    wRowDet(stcn(department, color3, 10), 1),
+                    wRowDet(
+                        status != ""
+                            ? PopupMenuButton<home.Menu>(
+                                enabled: false,
+                                position: PopupMenuPosition.under,
+                                tooltip: "",
+                                onSelected: (home.Menu item) {},
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10)),
+                                itemBuilder: (BuildContext context) =>
+                                    <PopupMenuEntry<home.Menu>>[
+                                  PopupMenuItem<home.Menu>(
+                                    value: home.Menu.itemOne,
+                                    padding: const EdgeInsets.symmetric(
+                                        vertical: 0, horizontal: 0),
+                                    child: SearchPopup(
+                                      searchYn: "N",
+                                      lstrColumnList: const [
+                                        {"COLUMN": "DESCP", "CAPTION": "Status"}
+                                      ],
+                                      lstrData: lstrStatusList,
+                                      callback: (val) {
+                                        if (mounted) {
+                                          var changeSts = val["CODE"];
+                                          // apiUpdateTask(
+                                          //     docno,
+                                          //     doctype,
+                                          //     changeSts,
+                                          //     issueTypeCode,
+                                          //     priorityCode);
+                                        }
+                                      },
+                                    ),
+                                  ),
+                                ],
+                                child: Container(
+                                  decoration: boxBaseDecoration(
+                                      status == "P"
+                                          ? Colors.green
+                                          : status == "C"
+                                              ? Colors.red
+                                              : status == "D"
+                                                  ? Colors.purple
+                                                  : status == "A"
+                                                      ? color2
+                                                      : status == "H"
+                                                          ? Colors.orange
+                                                          : color2,
+                                      30),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 10, vertical: 3),
+                                  child: stcn(
+                                      status == "P"
+                                          ? "Open"
+                                          : status == "C"
+                                              ? "Closed"
+                                              : status == "D"
+                                                  ? "Dropped"
+                                                  : status == "A"
+                                                      ? "Started"
+                                                      : status == "H"
+                                                          ? "Hold"
+                                                          : "",
+                                      Colors.white,
+                                      10),
+                                ),
+                              )
+                            : gapHC(0),
+                        1),
+                    wRowDet(stcn(taskDate, color3, 10), 1),
+                    // deadlineSts && status == "P"?
+                    // wRowDet(tc(deadline, Colors.red, 10),1):
+                    wRowDet(tcn(activeUser, color3, 10), 1),
+                    // wRowDet(PopupMenuButton<Menu>(
+                    //       enabled: status == "C" || status == "D"?false:true,
+                    //       position: PopupMenuPosition.under,
+                    //       tooltip: "",
+                    //       onSelected: (Menu item) {
+                    //         setState(() {
+                    //         });
+                    //       },
+                    //       shape:  RoundedRectangleBorder(
+                    //           borderRadius: BorderRadius.circular(10)),
+                    //       itemBuilder: (BuildContext context) => <PopupMenuEntry<Menu>>[
+                    //         PopupMenuItem<Menu>(
+                    //           enabled: status == "C" || status == "D"?false:true,
+                    //           value: Menu.itemOne,
+                    //           padding: const EdgeInsets.symmetric(vertical: 0,horizontal: 0),
+                    //           child: SearchPopup(
+                    //             searchYn: "N",
+                    //             lstrColumnList: const [{"COLUMN":"DESCP","CAPTION":"Priority"}],
+                    //             lstrData: lstrPriorityList,
+                    //             callback: (val){
+                    //               if(mounted){
+                    //                 apiUpdateTask(docno, doctype, status, issueTypeCode, val["CODE"]);
+                    //               }
+                    //             },),
+                    //         ),
+                    //       ],
+                    //       child:  Row(
+                    //         children: [
+                    //           Icon(
+                    //             priority == "EMERGENCY"?Icons.warning:priority == "CRITICAL"?Icons.local_fire_department_outlined:priority == "NORMAL"?Icons.cloud_queue_outlined:priority == "MEDIUM"?Icons.adjust_rounded:Icons.warning
+                    //             ,
+                    //             color: priority == "EMERGENCY"?Colors.deepOrange:priority == "CRITICAL"?Colors.red:priority == "NORMAL"?Colors.blue:priority == "MEDIUM"?Colors.amber:Colors.black
+                    //           ,size: 12,),
+                    //           gapWC(5),
+                    //           tcn(priority.toString(), Colors.black, 12),
+                    //         ],
+                    //       ),
+                    //     ),1),
+                    //wRowDet(tcn(assignUser.toString().toUpperCase(), color3, 10),1),
+                    wRowDet(
+                        stcn(createUser.toString().toUpperCase(), color3, 10),
+                        1),
+                  ],
+                ),
+                // Container(
+                //   padding: const EdgeInsets.symmetric(vertical: 2,horizontal: 5),
+                //   decoration: boxBaseDecoration(greyLight, 5),
+                //   child: Row(
+                //
+                //     children: [
+                //       Row(
+                //         children: [
+                //           const Icon(Icons.calendar_month,color: Colors.black,size: 12,),
+                //           gapWC(5),
+                //           tcn('Action Date', Colors.black, 10),
+                //           gapWC(5),
+                //           tcn('12-05-2023', Colors.black, 10),
+                //         ],
+                //       ),
+                //       gapWC(10),
+                //       Row(
+                //         children: [
+                //           const Icon(Icons.verified_user,color: Colors.black,size: 12,),
+                //           gapWC(5),
+                //           tcn('Moved From', Colors.black, 10),
+                //           gapWC(5),
+                //           tcn(assignUser, Colors.black, 10),
+                //         ],
+                //       ),
+                //     ],
+                //   ),
+                // ),
+                (taskStatus == "C" || taskStatus == "D") &&
+                        lstrViewDocno == docno
+                    ? Container(
+                        margin: const EdgeInsets.only(top: 5),
+                        decoration:
+                            boxBaseDecoration(greyLight.withOpacity(0.4), 2),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                tc("COMPLETION NOTE ", Colors.black, 8),
+                                gapWC(10),
+                                Expanded(
+                                  child: tcn(completionNote.toString(),
+                                      Colors.black, 10),
+                                )
+                              ],
+                            ),
+                            Row(
+                              children: [
+                                const Icon(
+                                  Icons.calendar_month,
+                                  color: Colors.black,
+                                  size: 12,
+                                ),
+                                gapWC(10),
+                                Expanded(
+                                  child: tcn(
+                                      closeDate.toString(), Colors.black, 10),
+                                )
+                              ],
+                            ),
+                            Row(
+                              children: [
+                                const Icon(
+                                  Icons.person,
+                                  color: Colors.black,
+                                  size: 12,
+                                ),
+                                gapWC(10),
+                                Expanded(
+                                  child: tcn(completedUser.toString(),
+                                      Colors.black, 10),
+                                )
+                              ],
+                            ),
+                            gapHC(10),
+                          ],
+                        ))
+                    : gapHC(0),
+                gapHC(5),
+                (status == "C" || status == "D") && lstrViewDocno == docno
+                    ? Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                vertical: 5, horizontal: 20),
+                            decoration: boxOutlineCustom1(
+                                Colors.transparent, 5, Colors.black, 0.5),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    const Icon(
+                                      Icons.album_rounded,
+                                      color: Colors.green,
+                                      size: 10,
+                                    ),
+                                    gapWC(10),
+                                    tc('Last Status', Colors.black, 10),
+                                  ],
+                                ),
+                                tcn(lastStatus.toString().toUpperCase(), color3,
+                                    10),
+                                tcn('ACTIVE USER :  ${activeUser.toString().toUpperCase()}',
+                                    color3, 10),
+                              ],
+                            ),
+                          ),
+                          /*Bounce(
+                            duration: const Duration(milliseconds: 110),
+                            onPressed: () {
+                              //apiMoveTask(docno, doctype);
+                              if (mounted) {
+                                setState(() {
+                                  sideNavigation = "TL";
+                                });
+                              }
+                              */ /*apiGetTaskDetTimeline(
+                            mainClientId, docno, doctype);*/ /*
+                            },
+                            child: wSettingsCard(Icons.access_time),
+                          ),*/
+                        ],
+                      )
+                    : gapHC(0),
+                (status != "C" && status != "D") && lstrViewDocno == docno
+                    ? Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                vertical: 5, horizontal: 20),
+                            decoration: boxOutlineCustom1(
+                                Colors.transparent, 5, Colors.black, 0.5),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    const Icon(
+                                      Icons.album_rounded,
+                                      color: Colors.green,
+                                      size: 10,
+                                    ),
+                                    gapWC(10),
+                                    tc('Last Status', Colors.black, 10),
+                                  ],
+                                ),
+                                tcn(lastStatus.toString().toUpperCase(), color3,
+                                    10),
+                                tcn('ACTIVE USER :  ${activeUser.toString().toUpperCase()}',
+                                    color3, 10),
+                              ],
+                            ),
+                          ),
+                          /*Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              status == "P" && lstrMenuHoverMode == "PROFILE"
+                                  ? Bounce(
+                                      duration:
+                                          const Duration(milliseconds: 110),
+                                      onPressed: () {
+                                        apiStartTask(docno, doctype);
+                                      },
+                                      child: Container(
+                                          decoration: boxDecoration(color2, 30),
+                                          padding: const EdgeInsets.symmetric(
+                                              vertical: 5, horizontal: 20),
+                                          child: Row(
+                                            children: [
+                                              const Icon(
+                                                Icons
+                                                    .play_circle_filled_rounded,
+                                                color: Colors.white,
+                                                size: 12,
+                                              ),
+                                              gapWC(5),
+                                              tcn1('START', Colors.white, 12)
+                                            ],
+                                          )),
+                                    )
+                                  : gapHC(0),
+                              status == "H" && lstrMenuHoverMode == "PROFILE"
+                                  ? Bounce(
+                                      duration:
+                                          const Duration(milliseconds: 110),
+                                      onPressed: () {
+                                        apiResumeTask(docno, doctype);
+                                      },
+                                      child: Container(
+                                          decoration: boxDecoration(color2, 30),
+                                          padding: const EdgeInsets.symmetric(
+                                              vertical: 5, horizontal: 20),
+                                          child: Row(
+                                            children: [
+                                              const Icon(
+                                                Icons
+                                                    .play_circle_filled_rounded,
+                                                color: Colors.white,
+                                                size: 12,
+                                              ),
+                                              gapWC(5),
+                                              tcn1('RESUME', Colors.white, 12)
+                                            ],
+                                          )),
+                                    )
+                                  : gapHC(0),
+                              status == "P" && lstrMenuHoverMode != "PROFILE"
+                                  ? Row(
+                                      children: [
+                                        Bounce(
+                                            duration: const Duration(
+                                                milliseconds: 110),
+                                            onPressed: () {
+                                              //apiMoveTask(docno, doctype);
+                                              if (mounted) {
+                                                setState(() {
+                                                  sideNavigation = "M";
+                                                  lstrAssignDocno = docno;
+                                                  lstrAssignDoctype = doctype;
+                                                });
+                                              }
+                                              scaffoldKey.currentState
+                                                  ?.openEndDrawer();
+                                            },
+                                            child: wSettingsCard(
+                                                Icons.screen_share_outlined)),
+                                        gapWC(5),
+                                        Bounce(
+                                          duration:
+                                              const Duration(milliseconds: 110),
+                                          onPressed: () {
+                                            //apiMoveTask(docno, doctype);
+                                            if (mounted) {
+                                              setState(() {
+                                                sideNavigation = "TL";
+                                              });
+                                            }
+                                            apiGetTaskDetTimeline(
+                                                mainClientId, docno, doctype);
+                                          },
+                                          child:
+                                              wSettingsCard(Icons.access_time),
+                                        ),
+                                      ],
+                                    )
+                                  : gapHC(0),
+                              gapWC(5),
+                              status == "A" || status == "H"
+                                  ? Row(
+                                      children: [
+                                        lstrMenuHoverMode == "PROFILE" &&
+                                                status == "A"
+                                            ? PopupMenuButton<Menu>(
+                                                position:
+                                                    PopupMenuPosition.under,
+                                                tooltip: "",
+                                                onSelected: (Menu item) {},
+                                                shape: RoundedRectangleBorder(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            10)),
+                                                itemBuilder:
+                                                    (BuildContext context) =>
+                                                        <PopupMenuEntry<Menu>>[
+                                                  PopupMenuItem<Menu>(
+                                                    value: Menu.itemOne,
+                                                    padding: const EdgeInsets
+                                                        .symmetric(
+                                                        vertical: 0,
+                                                        horizontal: 0),
+                                                    child: wHoldPopup(
+                                                        docno, doctype),
+                                                  ),
+                                                ],
+                                                child:
+                                                    wSettingsCard(Icons.pause),
+                                              )
+                                            : gapWC(0),
+                                        gapWC(5),
+                                        Bounce(
+                                            duration: const Duration(
+                                                milliseconds: 110),
+                                            onPressed: () {
+                                              //apiMoveTask(docno, doctype);
+                                              if (mounted) {
+                                                setState(() {
+                                                  sideNavigation = "M";
+                                                  lstrAssignDocno = docno;
+                                                  lstrAssignDoctype = doctype;
+                                                });
+                                              }
+                                              scaffoldKey.currentState
+                                                  ?.openEndDrawer();
+                                            },
+                                            child: wSettingsCard(
+                                                Icons.screen_share_outlined)),
+                                        gapWC(5),
+                                        lstrMenuHoverMode == "PROFILE"
+                                            ? PopupMenuButton<Menu>(
+                                                position:
+                                                    PopupMenuPosition.under,
+                                                tooltip: "",
+                                                onSelected: (Menu item) {},
+                                                shape: RoundedRectangleBorder(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            10)),
+                                                itemBuilder:
+                                                    (BuildContext context) =>
+                                                        <PopupMenuEntry<Menu>>[
+                                                  PopupMenuItem<Menu>(
+                                                    value: Menu.itemOne,
+                                                    padding: const EdgeInsets
+                                                        .symmetric(
+                                                        vertical: 0,
+                                                        horizontal: 0),
+                                                    child: wFinishPopup(
+                                                        docno, doctype),
+                                                  ),
+                                                ],
+                                                child: wSettingsCard(
+                                                    Icons.task_alt_rounded),
+                                              )
+                                            : gapWC(0),
+                                        gapWC(5),
+                                        Bounce(
+                                          duration:
+                                              const Duration(milliseconds: 110),
+                                          onPressed: () {
+                                            //apiMoveTask(docno, doctype);
+                                            if (mounted) {
+                                              setState(() {
+                                                sideNavigation = "TL";
+                                              });
+                                            }
+                                            apiGetTaskDetTimeline(
+                                                mainClientId, docno, doctype);
+                                          },
+                                          child:
+                                              wSettingsCard(Icons.access_time),
+                                        ),
+                                        gapWC(5),
+                                        Bounce(
+                                            duration: const Duration(
+                                                milliseconds: 110),
+                                            onPressed: () {
+                                              if (mounted) {
+                                                setState(() {
+                                                  sideNavigation = "T";
+                                                  lstrTSubTaskOf = docno;
+                                                  lstrTMainCompanyCode =
+                                                      mainClientId;
+                                                  lstrTTaskDoctype = doctype;
+                                                });
+                                              }
+                                              // fnNewTask();
+                                              // scaffoldKey.currentState
+                                              //     ?.openEndDrawer();
+                                            },
+                                            child: wSettingsCard(
+                                                Icons.add_task_outlined)),
+                                        gapWC(5),
+                                        wSettingsCard(Icons.comment),
+                                        gapWC(5),
+                                        wSettingsCard(
+                                            Icons.admin_panel_settings_rounded)
+                                      ],
+                                    )
+                                  : gapWC(0)
+                            ],
+                          ),*/
+                        ],
+                      )
+                    : gapHC(0),
+                gapHC(5),
+                lineC(1.0, greyLight),
+              ],
+            ),
+          ),
+        ),
+      ));
+    }
+    return rtnList;
+  }
+
+  /*Widget wSettingsCard(icon) {
+    return Container(
+      padding: const EdgeInsets.all(8),
+      decoration: boxDecoration(Colors.white, 5),
+      child: Icon(
+        icon,
+        color: color2,
+        size: 18,
+      ),
+    );
+  }*/
+
+  Widget wRowDet(child, flex) {
+    return Flexible(
+        flex: flex,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [Row(), child],
+        ));
   }
 
   Widget wFilterPopup(mode) {
@@ -1631,6 +2294,99 @@ class _ReportScreenState extends State<ReportScreen> {
     dprint(lResultList);
   }
 
+  apiDataDet(data) async {
+    var fixedFil = [];
+    var fil = [];
+
+    //TODO FILTER
+
+    for (var e in _selectedStatus) {
+      if ((e["KEY"] ?? "") == "P") {
+        fil.add({
+          "COL_KEY": "STATUS",
+          "COL_VAL": "A",
+        });
+        fil.add({
+          "COL_KEY": "STATUS",
+          "COL_VAL": "H",
+        });
+      }
+      fil.add({
+        "COL_KEY": "STATUS",
+        "COL_VAL": (e["KEY"] ?? ""),
+      });
+    }
+
+    //user
+
+    for (var e in flUserList) {
+      fil.add({
+        "COL_KEY": "USER_CODE",
+        "COL_VAL": (e ?? ""),
+      });
+    }
+
+    //task
+
+    if (flDocno.trim().isNotEmpty) {
+      fil.add({
+        "COL_KEY": "DOCNO",
+        "COL_VAL": flDocno,
+      });
+    }
+
+    for (var e in flCompanyList) {
+      fil.add({
+        "COL_KEY": "CLIENT_ID",
+        "COL_VAL": (e ?? ""),
+      });
+    }
+
+    for (var e in flModuleList) {
+      fil.add({
+        "COL_KEY": "MODULE",
+        "COL_VAL": (e ?? ""),
+      });
+    }
+
+    for (var e in flDepartment) {
+      fil.add({
+        "COL_KEY": "DEPARTMENT_CODE",
+        "COL_VAL": (e ?? ""),
+      });
+    }
+
+    for (var e in flPriorityList) {
+      fil.add({
+        "COL_KEY": "PRIORITY",
+        "COL_VAL": (e ?? ""),
+      });
+    }
+
+    //fixed filter
+
+    for (var e in _groupByItems) {}
+
+    fixedFil.add({
+      "COL_KEY": "",
+      "COL_VAL": "",
+    });
+
+    dynamic response = await apiCall.apiTaskReport(fixedFil,
+        setDate(2, fromDate), setDate(2, toDate), fil, g.wstrUserCd, 'N');
+    if (mounted) {
+      setState(() {
+        try {
+          _groupByData = response["HEAD"] ?? [];
+        } catch (e) {
+          _groupByData = [];
+          dprint(e);
+        }
+      });
+    }
+    dprint('RESPONSE^^^^ $response');
+  }
+
   fnConvertHoursToHMS(double hours) {
     // Find the number of hours
     int fullHours = hours.toInt();
@@ -1694,7 +2450,7 @@ class _ReportScreenState extends State<ReportScreen> {
         setState(() {
           flCreateDate = filDate;
         });
-        apiGetTask("F");
+        // apiGetTask("F");
       }
     }
   }
@@ -1982,6 +2738,7 @@ List _groupByItems = [
   {
     'TITLE': 'TASKNO',
     'RETURN_KEY': 'TASKNO',
+    'FILTER_KEY': 'DOCNO',
     'REQUEST_KEY': [
       {
         "COL_KEY": "B.DOCNO",
